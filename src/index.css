@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base colors */
+  --color-white: 255 255 255;
+  --color-black: 17 17 17;
+  
+  /* Component accent colors */
+  --color-teal: 0 128 128;
+  --color-green: 0 128 0;
+  --color-gold: 255 215 0;
+  --color-purple: 128 0 128;
+  
+  /* Theme colors - light mode defaults */
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: 245 245 245;
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: 75 75 75;
+  --color-border: 229 231 235;
+  --color-shadow: 0 0 0;
+}
+
+.dark {
+  --color-bg-primary: 17 24 39;
+  --color-bg-secondary: 31 41 55;
+  --color-text-primary: 243 244 246;
+  --color-text-secondary: 209 213 219;
+  --color-border: 55 65 81;
+  --color-shadow: 0 0 0;
+}
+
+@layer base {
+  html {
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  body {
+    @apply bg-bg-primary text-text-primary min-h-screen transition-colors duration-200;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium;
+  }
+  
+  h1 {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  h2 {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  h3 {
+    @apply text-lg sm:text-xl;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-bg-secondary text-text-primary hover:bg-opacity-90;
+  }
+  
+  .nav-link {
+    @apply flex items-center gap-2 px-4 py-3 rounded-md transition-all duration-200 
+           hover:bg-bg-secondary text-text-secondary hover:text-text-primary
+           focus:outline-none focus:bg-bg-secondary;
+  }
+  
+  .nav-link.active {
+    @apply bg-bg-secondary text-text-primary font-medium;
+  }
+  
+  .card {
+    @apply bg-bg-primary p-6 rounded-lg shadow border border-border;
+  }
+  
+  /* Component-specific accent colors */
+  .accent-teal {
+    @apply text-teal border-teal;
+  }
+  
+  .accent-green {
+    @apply text-green border-green;
+  }
+  
+  .accent-gold {
+    @apply text-gold border-gold;
+  }
+  
+  .accent-purple {
+    @apply text-purple border-purple;
+  }
+  
+  .bg-accent-teal {
+    @apply bg-teal text-white;
+  }
+  
+  .bg-accent-green {
+    @apply bg-green text-white;
+  }
+  
+  .bg-accent-gold {
+    @apply bg-gold text-black;
+  }
+  
+  .bg-accent-purple {
+    @apply bg-purple text-white;
+  }
+}
+
+/* Animations */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.page-transition {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
