@@ -13,138 +13,159 @@ const ReportDrafting: React.FC = () => {
   const [copied, setCopied] = useState(false);
   
   const templates = [
-    {
-      id: 'progress',
-      name: 'Progress Report',
-      content: `# QUARTERLY PROGRESS REPORT
+    { 
+      id: 'academic-achievement',
+      name: 'Academic Achievement Report',
+      content: `# ACADEMIC ACHIEVEMENT REPORT
 
 ## Student Information
 Name: [STUDENT NAME]
-ID: [STUDENT ID]
+Date of Birth: [DOB]
+Date of Evaluation: [DOE]
 Grade: [GRADE]
-Reporting Period: [DATE RANGE]
+Examiner: [EXAMINER]
 
-## Goal Progress Summary
-[GOAL AREA 1]: [PROGRESS DESCRIPTION]
-Current Performance: [MEASUREMENT]
-Status: [NOT MET / PARTIALLY MET / MET]
+## Reason for Referral
+[REASON FOR REFERRAL]
 
-[GOAL AREA 2]: [PROGRESS DESCRIPTION]
-Current Performance: [MEASUREMENT]
-Status: [NOT MET / PARTIALLY MET / MET]
+## Background Information
+[RELEVANT BACKGROUND INFORMATION]
 
-## Instructional Strategies Used
-- [STRATEGY 1]
-- [STRATEGY 2]
-- [STRATEGY 3]
+## Assessment Instruments Administered
+Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)
+[Other relevant academic tests or checklists]
+
+## Behavioral Observations
+[OBSERVATIONS DURING ASSESSMENT]
+
+## Test Results & Interpretation
+Woodcock-Johnson IV Tests of Achievement
+
+Clusters:
+Broad Achievement: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+Reading: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+Written Language: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+Mathematics: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+
+Subtests (Examples):
+Letter-Word Identification: SS [SCORE], PR [PERCENTILE]
+Passage Comprehension: SS [SCORE], PR [PERCENTILE]
+Spelling: SS [SCORE], PR [PERCENTILE]
+Calculation: SS [SCORE], PR [PERCENTILE]
+Applied Problems: SS [SCORE], PR [PERCENTILE]
+
+[NARRATIVE INTERPRETATION OF ACADEMIC SCORES]
+
+## Summary of Findings
+[KEY FINDINGS FROM ACADEMIC ASSESSMENT]
 
 ## Recommendations
-[RECOMMENDATIONS BASED ON PROGRESS]
-
-## Next Steps
-[PLANNED INTERVENTIONS OR ADJUSTMENTS]
-
-Report Completed By: [TEACHER NAME]
-Date: [DATE]`,
+[ACADEMIC RECOMMENDATIONS]`,
     },
     {
-      id: 'present-levels',
-      name: 'Present Levels',
-      content: `# PRESENT LEVELS OF ACADEMIC ACHIEVEMENT AND FUNCTIONAL PERFORMANCE
+      id: 'cognitive-processing',
+      name: 'Cognitive Processing Report',
+      content: `# COGNITIVE PROCESSING REPORT
 
 ## Student Information
 Name: [STUDENT NAME]
-ID: [STUDENT ID]
+Date of Birth: [DOB]
+Date of Evaluation: [DOE]
 Grade: [GRADE]
-Date: [DATE]
+Examiner: [EXAMINER]
 
-## Academic Performance
+## Reason for Referral
+[REASON FOR REFERRAL]
 
-### Reading
-[DESCRIBE CURRENT READING PERFORMANCE INCLUDING DECODING, FLUENCY, AND COMPREHENSION SKILLS]
+## Background Information
+[RELEVANT BACKGROUND INFORMATION]
 
-### Writing
-[DESCRIBE CURRENT WRITING PERFORMANCE INCLUDING ORGANIZATION, GRAMMAR, AND EXPRESSION]
+## Assessment Instruments Administered
+[Name of Cognitive Assessment, e.g., WISC-V, DAS-II, KABC-II]
+[Other cognitive or processing measures]
 
-### Mathematics
-[DESCRIBE CURRENT MATH PERFORMANCE INCLUDING CALCULATION AND PROBLEM-SOLVING SKILLS]
+## Behavioral Observations
+[OBSERVATIONS DURING ASSESSMENT]
 
-## Functional Performance
+## Test Results & Interpretation
+[Name of Cognitive Assessment]
 
-### Social/Emotional
-[DESCRIBE SOCIAL SKILLS, EMOTIONAL REGULATION, AND INTERPERSONAL INTERACTIONS]
+Overall/Composite Scores:
+Full Scale IQ (FSIQ) / General Conceptual Ability (GCA): Score [SCORE], PR [PERCENTILE], CI [CONFIDENCE INTERVAL], Range [DESCRIPTIVE RANGE]
 
-### Behavior
-[DESCRIBE BEHAVIORAL STRENGTHS AND AREAS OF CONCERN]
+Index/Factor Scores (Examples):
+Verbal Comprehension Index (VCI): Score [SCORE], PR [PERCENTILE]
+Visual Spatial Index (VSI): Score [SCORE], PR [PERCENTILE]
+Fluid Reasoning Index (FRI): Score [SCORE], PR [PERCENTILE]
+Working Memory Index (WMI): Score [SCORE], PR [PERCENTILE]
+Processing Speed Index (PSI): Score [SCORE], PR [PERCENTILE]
 
-### Communication
-[DESCRIBE EXPRESSIVE AND RECEPTIVE LANGUAGE SKILLS]
+[NARRATIVE INTERPRETATION OF COGNITIVE SCORES AND PROCESSING AREAS]
 
-### Fine/Gross Motor Skills
-[DESCRIBE MOTOR DEVELOPMENT AND FUNCTIONING]
+## Summary of Cognitive Strengths and Weaknesses
+[SUMMARY OF KEY COGNITIVE FINDINGS]
 
-## Impact of Disability
-[EXPLAIN HOW THE STUDENT'S DISABILITY AFFECTS INVOLVEMENT AND PROGRESS IN THE GENERAL CURRICULUM]
+## Implications for Learning
+[HOW COGNITIVE PROFILE IMPACTS LEARNING]
 
-## Strengths and Interests
-[LIST STUDENT'S STRENGTHS, INTERESTS, AND PREFERENCES]
-
-## Parent/Student Input
-[SUMMARIZE INPUT FROM PARENTS AND STUDENT REGARDING EDUCATIONAL CONCERNS AND PRIORITIES]
-
-Completed By: [TEACHER NAME]
-Date: [DATE]`,
+## Recommendations
+[RECOMMENDATIONS BASED ON COGNITIVE PROFILE]`,
     },
     {
-      id: 'behavior',
-      name: 'Behavior Intervention Plan',
-      content: `# BEHAVIOR INTERVENTION PLAN (BIP)
+      id: 'speech-language',
+      name: 'Speech & Language Report',
+      content: `# SPEECH AND LANGUAGE EVALUATION REPORT
 
 ## Student Information
 Name: [STUDENT NAME]
-ID: [STUDENT ID]
+Date of Birth: [DOB]
+Date of Evaluation: [DOE]
 Grade: [GRADE]
-Date: [DATE]
+Examiner: [EXAMINER, SLP]
 
-## Target Behavior
-[OPERATIONALLY DEFINE THE BEHAVIOR OF CONCERN]
+## Reason for Referral
+[REASON FOR REFERRAL]
 
-## Functional Behavior Assessment Summary
-### Antecedents (When is the behavior most likely to occur?)
-[DESCRIBE SITUATIONS, TIMES, SETTINGS WHEN BEHAVIOR TYPICALLY OCCURS]
+## Background Information & Communication History
+[RELEVANT BACKGROUND, DEVELOPMENTAL MILESTONES, PREVIOUS THERAPY]
 
-### Function of Behavior (Why is the behavior occurring?)
-[EXPLAIN THE PURPOSE THE BEHAVIOR SERVES FOR THE STUDENT]
+## Assessment Methods
+Standardized Tests (e.g., CELF-5, PLS-5, GFTA-3)
+Informal Measures (Language Sample, Observation, Criterion-Referenced)
+Oral Motor Examination
 
-## Replacement Behavior
-[DESCRIBE THE APPROPRIATE BEHAVIOR THAT WILL SERVE THE SAME FUNCTION]
+## Behavioral Observations
+[OBSERVATIONS DURING ASSESSMENT]
 
-## Prevention Strategies
-[LIST ENVIRONMENTAL MODIFICATIONS AND PROACTIVE APPROACHES]
+## Assessment Results & Interpretation
+Receptive Language
+[SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-## Teaching Strategies
-[DESCRIBE HOW THE REPLACEMENT BEHAVIOR WILL BE TAUGHT]
+Expressive Language
+[SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-## Reinforcement Plan
-[EXPLAIN HOW THE REPLACEMENT BEHAVIOR WILL BE REINFORCED]
+Articulation/Phonology
+[SOUNDS IN ERROR, PHONOLOGICAL PROCESSES, INTELLIGIBILITY, SCORES]
 
-## Response Plan
-[DESCRIBE HOW STAFF WILL RESPOND WHEN TARGET BEHAVIOR OCCURS]
+Fluency
+[OBSERVATIONS, STUTTERING CHARACTERISTICS, IMPACT]
 
-## Data Collection
-[SPECIFY HOW PROGRESS WILL BE MONITORED AND MEASURED]
+Voice
+[QUALITY, PITCH, LOUDNESS]
 
-## Communication Plan
-[DESCRIBE HOW INFORMATION WILL BE SHARED BETWEEN SCHOOL AND HOME]
+Oral Motor/Feeding (if applicable)
+[FINDINGS]
 
-Team Members:
-- [NAME, ROLE]
-- [NAME, ROLE]
-- [NAME, ROLE]
+## Summary of Communication Strengths and Needs
+[OVERALL SUMMARY]
 
-Review Date: [DATE]`,
-    },
-  ];
+## Diagnostic Impressions & Eligibility (if applicable)
+[SPEECH/LANGUAGE IMPAIRMENT DIAGNOSIS]
+
+## Recommendations
+[THERAPY GOALS, CLASSROOM STRATEGIES, HOME SUGGESTIONS]`,
+     }
+   ];
   
   const handleCopyTemplate = (content: string) => {
     navigator.clipboard.writeText(content);
