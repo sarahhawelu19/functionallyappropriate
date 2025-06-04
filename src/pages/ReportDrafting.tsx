@@ -16,154 +16,157 @@ const ReportDrafting: React.FC = () => {
     { 
       id: 'academic-achievement',
       name: 'Academic Achievement Report',
+      description: 'Comprehensive report on student academic skills, often using WJ IV, WIAT, etc.',
       content: `# ACADEMIC ACHIEVEMENT REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-Date of Birth: [DOB]
-Date of Evaluation: [DOE]
-Grade: [GRADE]
-Examiner: [EXAMINER]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER]
 
-## Reason for Referral
-[REASON FOR REFERRAL]
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-## Background Information
-[RELEVANT BACKGROUND INFORMATION]
+        ## Background Information
+        [RELEVANT BACKGROUND INFORMATION]
 
-## Assessment Instruments Administered
-Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)
-[Other relevant academic tests or checklists]
+        ## Assessment Instruments Administered
+        Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)
+        [Other relevant academic tests or checklists]
 
-## Behavioral Observations
-[OBSERVATIONS DURING ASSESSMENT]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Test Results & Interpretation
-Woodcock-Johnson IV Tests of Achievement
+        ## Test Results & Interpretation
+        Woodcock-Johnson IV Tests of Achievement
 
-Clusters:
-Broad Achievement: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
-Reading: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
-Written Language: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
-Mathematics: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Clusters:
+        Broad Achievement: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Reading: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Written Language: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Mathematics: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
 
-Subtests (Examples):
-Letter-Word Identification: SS [SCORE], PR [PERCENTILE]
-Passage Comprehension: SS [SCORE], PR [PERCENTILE]
-Spelling: SS [SCORE], PR [PERCENTILE]
-Calculation: SS [SCORE], PR [PERCENTILE]
-Applied Problems: SS [SCORE], PR [PERCENTILE]
+        Subtests (Examples):
+        Letter-Word Identification: SS [SCORE], PR [PERCENTILE]
+        Passage Comprehension: SS [SCORE], PR [PERCENTILE]
+        Spelling: SS [SCORE], PR [PERCENTILE]
+        Calculation: SS [SCORE], PR [PERCENTILE]
+        Applied Problems: SS [SCORE], PR [PERCENTILE]
 
-[NARRATIVE INTERPRETATION OF ACADEMIC SCORES]
+        [NARRATIVE INTERPRETATION OF ACADEMIC SCORES]
 
-## Summary of Findings
-[KEY FINDINGS FROM ACADEMIC ASSESSMENT]
+        ## Summary of Findings
+        [KEY FINDINGS FROM ACADEMIC ASSESSMENT]
 
-## Recommendations
-[ACADEMIC RECOMMENDATIONS]`,
+        ## Recommendations
+        [ACADEMIC RECOMMENDATIONS]`,
     },
     {
       id: 'cognitive-processing',
       name: 'Cognitive Processing Report',
+      description: 'Details student cognitive abilities, processing strengths, and weaknesses.',
       content: `# COGNITIVE PROCESSING REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-Date of Birth: [DOB]
-Date of Evaluation: [DOE]
-Grade: [GRADE]
-Examiner: [EXAMINER]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER]
 
-## Reason for Referral
-[REASON FOR REFERRAL]
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-## Background Information
-[RELEVANT BACKGROUND INFORMATION]
+        ## Background Information
+        [RELEVANT BACKGROUND INFORMATION]
 
-## Assessment Instruments Administered
-[Name of Cognitive Assessment, e.g., WISC-V, DAS-II, KABC-II]
-[Other cognitive or processing measures]
+        ## Assessment Instruments Administered
+        [Name of Cognitive Assessment, e.g., WISC-V, DAS-II, KABC-II]
+        [Other cognitive or processing measures]
 
-## Behavioral Observations
-[OBSERVATIONS DURING ASSESSMENT]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Test Results & Interpretation
-[Name of Cognitive Assessment]
+        ## Test Results & Interpretation
+        [Name of Cognitive Assessment]
 
-Overall/Composite Scores:
-Full Scale IQ (FSIQ) / General Conceptual Ability (GCA): Score [SCORE], PR [PERCENTILE], CI [CONFIDENCE INTERVAL], Range [DESCRIPTIVE RANGE]
+        Overall/Composite Scores:
+        Full Scale IQ (FSIQ) / General Conceptual Ability (GCA): Score [SCORE], PR [PERCENTILE], CI [CONFIDENCE INTERVAL], Range [DESCRIPTIVE RANGE]
 
-Index/Factor Scores (Examples):
-Verbal Comprehension Index (VCI): Score [SCORE], PR [PERCENTILE]
-Visual Spatial Index (VSI): Score [SCORE], PR [PERCENTILE]
-Fluid Reasoning Index (FRI): Score [SCORE], PR [PERCENTILE]
-Working Memory Index (WMI): Score [SCORE], PR [PERCENTILE]
-Processing Speed Index (PSI): Score [SCORE], PR [PERCENTILE]
+        Index/Factor Scores (Examples):
+        Verbal Comprehension Index (VCI): Score [SCORE], PR [PERCENTILE]
+        Visual Spatial Index (VSI): Score [SCORE], PR [PERCENTILE]
+        Fluid Reasoning Index (FRI): Score [SCORE], PR [PERCENTILE]
+        Working Memory Index (WMI): Score [SCORE], PR [PERCENTILE]
+        Processing Speed Index (PSI): Score [SCORE], PR [PERCENTILE]
 
-[NARRATIVE INTERPRETATION OF COGNITIVE SCORES AND PROCESSING AREAS]
+        [NARRATIVE INTERPRETATION OF COGNITIVE SCORES AND PROCESSING AREAS]
 
-## Summary of Cognitive Strengths and Weaknesses
-[SUMMARY OF KEY COGNITIVE FINDINGS]
+        ## Summary of Cognitive Strengths and Weaknesses
+        [SUMMARY OF KEY COGNITIVE FINDINGS]
 
-## Implications for Learning
-[HOW COGNITIVE PROFILE IMPACTS LEARNING]
+        ## Implications for Learning
+        [HOW COGNITIVE PROFILE IMPACTS LEARNING]
 
-## Recommendations
-[RECOMMENDATIONS BASED ON COGNITIVE PROFILE]`,
+        ## Recommendations
+        [RECOMMENDATIONS BASED ON COGNITIVE PROFILE]`,
     },
     {
       id: 'speech-language',
       name: 'Speech & Language Report',
+      description: 'Assesses various aspects of communication including receptive/expressive language, articulation, fluency, and voice.',
       content: `# SPEECH AND LANGUAGE EVALUATION REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-Date of Birth: [DOB]
-Date of Evaluation: [DOE]
-Grade: [GRADE]
-Examiner: [EXAMINER, SLP]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER, SLP]
 
-## Reason for Referral
-[REASON FOR REFERRAL]
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-## Background Information & Communication History
-[RELEVANT BACKGROUND, DEVELOPMENTAL MILESTONES, PREVIOUS THERAPY]
+        ## Background Information & Communication History
+        [RELEVANT BACKGROUND, DEVELOPMENTAL MILESTONES, PREVIOUS THERAPY]
 
-## Assessment Methods
-Standardized Tests (e.g., CELF-5, PLS-5, GFTA-3)
-Informal Measures (Language Sample, Observation, Criterion-Referenced)
-Oral Motor Examination
+        ## Assessment Methods
+        Standardized Tests (e.g., CELF-5, PLS-5, GFTA-3)
+        Informal Measures (Language Sample, Observation, Criterion-Referenced)
+        Oral Motor Examination
 
-## Behavioral Observations
-[OBSERVATIONS DURING ASSESSMENT]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Assessment Results & Interpretation
-Receptive Language
-[SKILLS ASSESSED, SCORES, INTERPRETATION]
+        ## Assessment Results & Interpretation
+        Receptive Language
+        [SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-Expressive Language
-[SKILLS ASSESSED, SCORES, INTERPRETATION]
+        Expressive Language
+        [SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-Articulation/Phonology
-[SOUNDS IN ERROR, PHONOLOGICAL PROCESSES, INTELLIGIBILITY, SCORES]
+        Articulation/Phonology
+        [SOUNDS IN ERROR, PHONOLOGICAL PROCESSES, INTELLIGIBILITY, SCORES]
 
-Fluency
-[OBSERVATIONS, STUTTERING CHARACTERISTICS, IMPACT]
+        Fluency
+        [OBSERVATIONS, STUTTERING CHARACTERISTICS, IMPACT]
 
-Voice
-[QUALITY, PITCH, LOUDNESS]
+        Voice
+        [QUALITY, PITCH, LOUDNESS]
 
-Oral Motor/Feeding (if applicable)
-[FINDINGS]
+        Oral Motor/Feeding (if applicable)
+        [FINDINGS]
 
-## Summary of Communication Strengths and Needs
-[OVERALL SUMMARY]
+        ## Summary of Communication Strengths and Needs
+        [OVERALL SUMMARY]
 
-## Diagnostic Impressions & Eligibility (if applicable)
-[SPEECH/LANGUAGE IMPAIRMENT DIAGNOSIS]
+        ## Diagnostic Impressions & Eligibility (if applicable)
+        [SPEECH/LANGUAGE IMPAIRMENT DIAGNOSIS]
 
-## Recommendations
-[THERAPY GOALS, CLASSROOM STRATEGIES, HOME SUGGESTIONS]`,
+        ## Recommendations
+        [THERAPY GOALS, CLASSROOM STRATEGIES, HOME SUGGESTIONS]`,
      }
    ];
   
@@ -298,7 +301,7 @@ Oral Motor/Feeding (if applicable)
                   <h3 className="font-medium text-lg">{template.name}</h3>
                 </div>
                 <p className="text-sm text-text-secondary mt-1 line-clamp-3 mb-3">
-                  {template.content.split('\n\n')[0].replace(/#+\s*/, '').substring(0, 120) + '...'}
+                  {template.description}
                 </p>
                 <div className="flex items-center justify-end gap-2 mt-auto">
                   <button
