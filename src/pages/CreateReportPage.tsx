@@ -92,49 +92,49 @@ const CreateReportPage: React.FC = () => {
             </>
           ) : (
             <>
-            <h2 className="text-xl font-medium mb-6">Step 1: Choose an Existing Template</h2>
-            <div className="space-y-4">
-              {availableTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className="w-full text-left p-4 border border-border rounded-md transition-all hover:border-gold hover:bg-gold hover:bg-opacity-10 flex flex-col"
-                >
-                  <div className="flex items-start gap-3 mb-2">
-                    <FileText className="text-gold mt-1" size={20} />
-                    <div>
-                      <h3 className="font-semibold text-lg">{template.name}</h3>
-                      <p className="text-sm text-text-secondary line-clamp-2">{template.description}</p>
+              <h2 className="text-xl font-medium mb-6">Step 1: Choose an Existing Template</h2>
+              <div className="space-y-4">
+                {availableTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="w-full text-left p-4 border border-border rounded-md transition-all hover:border-gold hover:bg-gold hover:bg-opacity-10 flex flex-col"
+                  >
+                    <div className="flex items-start gap-3 mb-2">
+                      <FileText className="text-gold mt-1" size={20} />
+                      <div>
+                        <h3 className="font-semibold text-lg">{template.name}</h3>
+                        <p className="text-sm text-text-secondary line-clamp-2">{template.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 mt-auto pt-2">
+                      <Link
+                        to={`?template=${template.id}`}
+                        className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-4 py-1.5 text-sm flex items-center gap-1.5"
+                        onClick={() => {
+                          setSelectedFile(null); 
+                        }}
+                      >
+                        Select this Template
+                        <ArrowRight size={14} />
+                      </Link>
                     </div>
                   </div>
-                  <div className="flex items-center justify-end gap-2 mt-auto pt-2">
-                    <Link
-                      to={`?template=${template.id}`}
-                      className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-4 py-1.5 text-sm flex items-center gap-1.5"
-                      onClick={() => {
-                          setSelectedFile(null); 
-                      }}
-                    >
-                      Select this Template
-                      <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 pt-6 border-t border-border text-center">
-              <p className="text-text-secondary mb-3">Or, if you have your own template file:</p>
-              <Link 
+                ))}
+              </div>
+              <div className="mt-8 pt-6 border-t border-border text-center">
+                <p className="text-text-secondary mb-3">Or, if you have your own template file:</p>
+                <Link 
                   to="?action=upload" 
                   className="btn border border-border hover:border-gold text-gold"
                   onClick={() => {
-                      setSelectedFile(null);
+                    setSelectedFile(null);
                   }}
-              >
+                >
                   Upload a Custom Template File
-              </Link>
-            </div>
-          </>
-          )}
+                </Link>
+              </div>
+            </>
+          )
         )}
         
         {currentStep === 2 && (
@@ -143,9 +143,9 @@ const CreateReportPage: React.FC = () => {
             <p className="text-text-secondary mb-2">
               {selectedFile ? 
                 `You are using the uploaded file: ${selectedFile.name}. (Placeholder for template parsing results and score input fields).` :
-              selectedTemplateId ?
-                `You are using template ID: ${selectedTemplateId}. (Placeholder for score input fields).` :
-                "Error: No template or file selected." 
+                selectedTemplateId ?
+                  `You are using template ID: ${selectedTemplateId}. (Placeholder for score input fields).` :
+                  "Error: No template or file selected." 
               }
             </p>
             
