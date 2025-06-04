@@ -35,7 +35,7 @@ const CreateReportPage: React.FC = () => {
       
       <div className="card">
         {currentStep === 1 && (
-          {currentAction === 'upload' ? (
+          currentAction === 'upload' ? (
             <>
               <h2 className="text-xl font-medium mb-4">Upload Your Report Template</h2>
               <label htmlFor="template-upload" className="block">
