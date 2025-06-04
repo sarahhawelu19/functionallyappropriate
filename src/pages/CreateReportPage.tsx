@@ -2,12 +2,29 @@ import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
 
+interface FormData {
+  studentName?: string;
+  dob?: string;
+  doe?: string;
+  grade?: string;
+  examiner?: string;
+  wj_broad_ss?: string;
+  wj_broad_pr?: string;
+  wj_broad_range?: string;
+}
+
 const CreateReportPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedTemplateId = searchParams.get('template');
   const currentAction = searchParams.get('action');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [formData, setFormData] = useState<FormData>({});
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
   
   const availableTemplates = [
     { id: 'academic-achievement', name: 'Academic Achievement Report', description: 'Comprehensive report on student academic skills, often using WJ IV, WIAT, etc.' },
@@ -149,8 +166,79 @@ const CreateReportPage: React.FC = () => {
               }
             </p>
             
-            <div className="my-6 p-6 border border-dashed border-border rounded-md bg-bg-secondary">
-              <p className="text-text-secondary text-center">Score input forms and narrative prompts will appear here.</p>
+            <div className="space-y-8">
+              {selectedTemplateId === 'academic-achievement' && (
+                <>
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-3 text-gold">Student Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="studentName" className="block text-sm font-medium mb-1">Student Name</label>
+                        <input type="text" name="studentName" id="studentName" value={formData.studentName || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="dob" className="block text-sm font-medium mb-1">Date of Birth</label>
+                        <input type="date" name="dob" id="dob" value={formData.dob || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="doe" className="block text-sm font-medium mb-1">Date of Evaluation</label>
+                        <input type="date" name="doe" id="doe" value={formData.doe || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="grade" className="block text-sm font-medium mb-1">Grade</label>
+                        <input type="text" name="grade" id="grade" value={formData.grade || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label htmlFor="examiner" className="block text-sm font-medium mb-1">Examiner</label>
+                        <input type="text" name="examiner" id="examiner" value={formData.examiner || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-3 text-gold">Woodcock-Johnson IV - Clusters</h3>
+                    <div className="mb-4 p-3 border border-border-secondary rounded bg-bg-secondary">
+                      <h4 className="font-medium mb-2">Broad Achievement</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label htmlFor="wj_broad_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                          <input type="number" name="wj_broad_ss" id="wj_broad_ss" value={formData.wj_broad_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                        </div>
+                        <div>
+                          <label htmlFor="wj_broad_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                          <input type="number" name="wj_broad_pr" id="wj_broad_pr" value={formData.wj_broad_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                        </div>
+                        <div>
+                          <label htmlFor="wj_broad_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                          <input type="text" name="wj_broad_range" id="wj_broad_range" value={formData.wj_broad_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-text-secondary mt-2">More cluster and subtest inputs will be added here.</p>
+                  </div>
+                </>
+              )}
+
+              {selectedTemplateId === 'cognitive-processing' && (
+                <div className="p-4 border border-border rounded-md">
+                  <h3 className="text-lg font-semibold mb-3 text-gold">Cognitive Processing - Score Input</h3>
+                  <p className="text-text-secondary">Score input fields for Cognitive Processing reports will go here.</p>
+                </div>
+              )}
+
+              {selectedTemplateId === 'speech-language' && (
+                <div className="p-4 border border-border rounded-md">
+                  <h3 className="text-lg font-semibold mb-3 text-gold">Speech & Language - Score Input</h3>
+                  <p className="text-text-secondary">Score input fields for Speech & Language reports will go here.</p>
+                </div>
+              )}
+
+              {!['academic-achievement', 'cognitive-processing', 'speech-language'].includes(selectedTemplateId || '') && selectedFile && (
+                <div className="p-4 border border-border rounded-md">
+                  <h3 className="text-lg font-semibold mb-3 text-gold">Uploaded File: {selectedFile.name}</h3>
+                  <p className="text-text-secondary">Placeholder for displaying parsed template fields and score input for uploaded files.</p>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between items-center mt-8">
