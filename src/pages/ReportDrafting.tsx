@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Check, Download, Plus } from 'lucide-react';
+import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ReportDrafting: React.FC = () => {
   const [reports, setReports] = useState([
@@ -155,12 +156,12 @@ Review Date: [DATE]`,
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-medium">Report Drafting</h1>
-        <button className="btn bg-accent-gold text-black">
+        <Link to="/reports/new" className="btn bg-accent-gold text-black">
           <span className="flex items-center gap-1">
             <Plus size={18} />
             New Report
           </span>
-        </button>
+        </Link>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -199,7 +200,7 @@ Review Date: [DATE]`,
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <button className="p-1.5 hover:bg-bg-secondary rounded-md transition-colors" aria-label="Edit report">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          <FilePenLine size={16} />
                         </button>
                         <button className="p-1.5 hover:bg-bg-secondary rounded-md transition-colors" aria-label="Download report">
                           <Download size={16} />
@@ -216,12 +217,12 @@ Review Date: [DATE]`,
             <div className="text-center py-8 text-text-secondary">
               <FileText size={40} className="mx-auto mb-2 opacity-30" />
               <p>No reports have been created yet</p>
-              <button className="mt-4 btn bg-accent-gold text-black">
+              <Link to="/reports/new" className="mt-4 btn bg-accent-gold text-black flex items-center gap-1">
                 <span className="flex items-center gap-1">
                   <Plus size={16} />
                   Create First Report
                 </span>
-              </button>
+              </Link>
             </div>
           )}
           
@@ -276,21 +277,30 @@ Review Date: [DATE]`,
             <h3 className="font-medium mb-3">AI Writing Assistance</h3>
             <div className="space-y-3">
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Generate Present Levels Description</h3>
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} />
+                  <h3 className="text-sm">Generate Present Levels Description</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Based on assessment data and observations
                 </p>
               </button>
               
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Expand Goal Progress Notes</h3>
+                <div className="flex items-center gap-2">
+                  <MessageSquarePlus size={16} />
+                  <h3 className="text-sm">Expand Goal Progress Notes</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Turn brief notes into detailed progress descriptions
                 </p>
               </button>
               
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Suggest Intervention Strategies</h3>
+                <div className="flex items-center gap-2">
+                  <Lightbulb size={16} />
+                  <h3 className="text-sm">Suggest Intervention Strategies</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Based on student needs and goals
                 </p>
