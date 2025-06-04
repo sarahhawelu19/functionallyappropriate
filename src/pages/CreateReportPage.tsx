@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { UploadCloud } from 'lucide-react';
+import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
 
 const CreateReportPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const selectedTemplateId = searchParams.get('template');
   const currentAction = searchParams.get('action');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  const availableTemplates = [
+    { id: 'progress', name: 'Progress Report', description: 'Quarterly update on student goals and progress.' },
+    { id: 'present-levels', name: 'Present Levels', description: 'Detailed summary of academic and functional performance.' },
+    { id: 'behavior', name: 'Behavior Intervention Plan', description: 'Plan to address and support specific student behaviors.' },
+  ];
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,8 +68,6 @@ const CreateReportPage: React.FC = () => {
         ) : (
           <>
             <h2 className="text-xl font-medium mb-4">Step 1: Choose a Template</h2>
-            <p className="text-text-secondary mb-4">(UI to list and select existing templates will go here. For now, please go back and select a template or choose to upload.)</p>
-            <Link to="/reports" className="btn btn-primary mt-4">Back to Report Drafting</Link>
           </>
         )}
       </div>
