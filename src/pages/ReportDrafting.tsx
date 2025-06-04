@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb } from 'lucide-react';
+import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ReportDrafting: React.FC = () => {
@@ -255,21 +255,38 @@ Review Date: [DATE]`,
           <p className="text-text-secondary mb-4">Use these templates to create standardized reports for your students.</p>
           
           <div className="space-y-3">
-            {templates.map(template => (
-              <button 
+            {templates.map((template) => (
+              <div
                 key={template.id}
-                className={`w-full text-left p-3 border rounded-md transition-all ${
-                  activeTemplate === template.id 
-                    ? 'border-gold bg-gold bg-opacity-5' 
+                className={`w-full text-left p-4 border rounded-md transition-all flex flex-col ${
+                  activeTemplate === template.id
+                    ? 'border-gold bg-gold bg-opacity-5'
                     : 'border-border hover:border-gold hover:bg-gold hover:bg-opacity-5'
                 }`}
-                onClick={() => setActiveTemplate(template.id)}
               >
-                <h3 className="font-medium">{template.name}</h3>
-                <p className="text-sm text-text-secondary mt-1 line-clamp-2">
-                  {template.content.split('\n\n')[0].replace('# ', '')}
+                <div className="flex items-start gap-2 mb-2">
+                  <FileText className="text-gold" size={20} />
+                  <h3 className="font-medium text-lg">{template.name}</h3>
+                </div>
+                <p className="text-sm text-text-secondary mt-1 line-clamp-3 mb-3">
+                  {template.content.split('\n\n')[0].replace(/#+\s*/, '').substring(0, 120) + '...'}
                 </p>
-              </button>
+                <div className="flex items-center justify-end gap-2 mt-auto">
+                  <button
+                    className="btn-sm border border-border text-text-secondary hover:border-gold hover:text-gold px-3 py-1 text-xs"
+                    onClick={() => setActiveTemplate(template.id)}
+                  >
+                    Preview
+                  </button>
+                  <Link
+                    to={`/reports/new?template=${template.id}`}
+                    className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-3 py-1 text-xs flex items-center gap-1"
+                  >
+                    Use Template
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
           
