@@ -67,8 +67,53 @@ const CreateReportPage: React.FC = () => {
           </>
         ) : (
           <>
-            <h2 className="text-xl font-medium mb-4">Step 1: Choose a Template</h2>
-          </>
+          <h2 className="text-xl font-medium mb-6">Step 1: Choose an Existing Template</h2>
+          <div className="space-y-4">
+            {availableTemplates.map((template) => (
+              <div
+                key={template.id}
+                className="w-full text-left p-4 border border-border rounded-md transition-all hover:border-gold hover:bg-gold hover:bg-opacity-10 flex flex-col"
+              >
+                <div className="flex items-start gap-3 mb-2">
+                  <FileText className="text-gold mt-1" size={20} />
+                  <div>
+                    <h3 className="font-semibold text-lg">{template.name}</h3>
+                    <p className="text-sm text-text-secondary line-clamp-2">{template.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 mt-auto pt-2">
+                  {/* Optional: A preview button could be added here if needed */}
+                  <Link
+                    to={`?template=${template.id}`} // This will update the URL and re-render the component to the "selectedTemplateId" branch
+                    className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-4 py-1.5 text-sm flex items-center gap-1.5"
+                    onClick={() => {
+                        // Clear file selection if a template is chosen
+                        setSelectedFile(null); 
+                        // Optionally, you could also clear the 'action' param from URL if you used setSearchParams
+                    }}
+                  >
+                    Select this Template
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <p className="text-text-secondary mb-3">Or, if you have your own template file:</p>
+            <Link 
+                to="?action=upload" 
+                className="btn border border-border hover:border-gold text-gold"
+                onClick={() => {
+                    // Clear file selection if switching to upload
+                    setSelectedFile(null);
+                    // Optionally, you could also clear the 'template' param from URL if you used setSearchParams
+                }}
+            >
+                Upload a Custom Template File
+            </Link>
+          </div>
+        </>
         )}
       </div>
     </div>
