@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight } from 'lucide-react';
+import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight, UploadCloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ReportDrafting: React.FC = () => {
@@ -253,6 +253,14 @@ Review Date: [DATE]`,
         <div className="card h-fit">
           <h2 className="text-xl font-medium mb-4">Report Templates</h2>
           <p className="text-text-secondary mb-4">Use these templates to create standardized reports for your students.</p>
+          
+          <div className="mb-6 p-6 border-2 border-dashed border-border rounded-md hover:border-gold transition-all cursor-pointer bg-bg-secondary hover:bg-opacity-50">
+            <Link to="/reports/new?action=upload" className="flex flex-col items-center justify-center text-center">
+              <UploadCloud size={32} className="text-text-secondary mb-2" />
+              <p className="font-medium text-text-primary">Upload Custom Template</p>
+              <p className="text-sm text-text-secondary">Drag & drop or click to browse</p>
+            </Link>
+          </div>
           
           <div className="space-y-3">
             {templates.map((template) => (
