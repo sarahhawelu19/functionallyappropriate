@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight, UploadCloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDropzone } from 'react-dropzone';
 
 const ReportDrafting: React.FC = () => {
   const [reports, setReports] = useState([
@@ -11,6 +12,23 @@ const ReportDrafting: React.FC = () => {
   
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      console.log('Dropped file:', acceptedFiles[0]);
+      // Handle the uploaded file here
+    }
+  }, []);
+  
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt']
+    },
+    multiple: false
+  });
   
   const templates = [
     { 
@@ -279,11 +297,25 @@ const ReportDrafting: React.FC = () => {
           <p className="text-text-secondary mb-4">Use these templates to create standardized reports for your students.</p>
           
           <div className="mb-6 p-6 border-2 border-dashed border-border rounded-md hover:border-gold transition-all cursor-pointer bg-bg-secondary hover:bg-opacity-50">
-            <Link to="/reports/new?action=upload" className="flex flex-col items-center justify-center text-center">
+            <div {...getRootProps()} className={`flex flex-col items-center justify-center text-center transition-all
+              ${isDragActive ? 'border-gold ring-2 ring-gold' : ''}
+              ${isDragAccept ? 'text-green' : ''}
+              ${isDragReject ? 'text-red-500' : ''}`}>
+              <input {...getInputProps()} />
               <UploadCloud size={32} className="text-text-secondary mb-2" />
-              <p className="font-medium text-text-primary">Upload Custom Template</p>
-              <p className="text-sm text-text-secondary">Drag & drop or click to browse</p>
-            </Link>
+              {isDragReject ? (
+                <p className="font-medium text-red-500">File type not accepted</p>
+              ) : isDragAccept ? (
+                <p className="font-medium text-green">Drop to upload template</p>
+              ) : isDragActive ? (
+                <p className="font-medium text-gold">Drop the file here</p>
+              ) : (
+                <>
+                  <p className="font-medium text-text-primary">Upload Custom Template</p>
+                  <p className="text-sm text-text-secondary">Drag & drop or click to browse</p>
+                </>
+              )}
+            </div>
           </div>
           
           <div className="space-y-3">
