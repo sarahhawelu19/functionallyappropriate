@@ -12,6 +12,30 @@ interface FormData {
   backgroundInfo?: string;
   assessmentInstruments?: string;
   behavioralObservations?: string;
+  includeExtendedBattery?: boolean;
+  // Standard Battery Subtests
+  wj_letter_word_ss?: string;
+  wj_letter_word_pr?: string;
+  wj_applied_problems_ss?: string;
+  wj_applied_problems_pr?: string;
+  wj_spelling_ss?: string;
+  wj_spelling_pr?: string;
+  wj_passage_comp_ss?: string;
+  wj_passage_comp_pr?: string;
+  wj_calculation_ss?: string;
+  wj_calculation_pr?: string;
+  wj_writing_samples_ss?: string;
+  wj_writing_samples_pr?: string;
+  wj_word_attack_ss?: string;
+  wj_word_attack_pr?: string;
+  wj_oral_reading_ss?: string;
+  wj_oral_reading_pr?: string;
+  wj_sent_read_flu_ss?: string;
+  wj_sent_read_flu_pr?: string;
+  wj_math_facts_flu_ss?: string;
+  wj_math_facts_flu_pr?: string;
+  wj_sent_write_flu_ss?: string;
+  wj_sent_write_flu_pr?: string;
   wj_broad_ss?: string;
   wj_broad_pr?: string;
   wj_broad_range?: string;
@@ -38,8 +62,9 @@ const CreateReportPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+    setFormData(prev => ({ ...prev, [name]: val }));
   };
   
   const availableTemplates = [
@@ -285,6 +310,190 @@ const CreateReportPage: React.FC = () => {
                         <input type="text" name="wj_math_range" id="wj_math_range" value={formData.wj_math_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
                       </div>
                     </div>
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-3 text-gold">Woodcock-Johnson IV - Subtests</h3>
+                    
+                    {/* Standard Battery Subtests */}
+                    <div className="space-y-3">
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">1. Letter-Word Identification</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_letter_word_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_letter_word_ss" id="wj_letter_word_ss" value={formData.wj_letter_word_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_letter_word_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_letter_word_pr" id="wj_letter_word_pr" value={formData.wj_letter_word_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">2. Applied Problems</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_applied_problems_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_applied_problems_ss" id="wj_applied_problems_ss" value={formData.wj_applied_problems_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_applied_problems_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_applied_problems_pr" id="wj_applied_problems_pr" value={formData.wj_applied_problems_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">3. Spelling</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_spelling_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_spelling_ss" id="wj_spelling_ss" value={formData.wj_spelling_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_spelling_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_spelling_pr" id="wj_spelling_pr" value={formData.wj_spelling_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">4. Passage Comprehension</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_passage_comp_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_passage_comp_ss" id="wj_passage_comp_ss" value={formData.wj_passage_comp_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_passage_comp_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_passage_comp_pr" id="wj_passage_comp_pr" value={formData.wj_passage_comp_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">5. Calculation</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_calculation_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_calculation_ss" id="wj_calculation_ss" value={formData.wj_calculation_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_calculation_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_calculation_pr" id="wj_calculation_pr" value={formData.wj_calculation_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">6. Writing Samples</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_writing_samples_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_writing_samples_ss" id="wj_writing_samples_ss" value={formData.wj_writing_samples_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_writing_samples_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_writing_samples_pr" id="wj_writing_samples_pr" value={formData.wj_writing_samples_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">7. Word Attack</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_word_attack_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_word_attack_ss" id="wj_word_attack_ss" value={formData.wj_word_attack_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_word_attack_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_word_attack_pr" id="wj_word_attack_pr" value={formData.wj_word_attack_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">8. Oral Reading</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_oral_reading_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_oral_reading_ss" id="wj_oral_reading_ss" value={formData.wj_oral_reading_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_oral_reading_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_oral_reading_pr" id="wj_oral_reading_pr" value={formData.wj_oral_reading_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">9. Sentence Reading Fluency</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_sent_read_flu_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_sent_read_flu_ss" id="wj_sent_read_flu_ss" value={formData.wj_sent_read_flu_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_sent_read_flu_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_sent_read_flu_pr" id="wj_sent_read_flu_pr" value={formData.wj_sent_read_flu_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">10. Math Facts Fluency</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_math_facts_flu_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_math_facts_flu_ss" id="wj_math_facts_flu_ss" value={formData.wj_math_facts_flu_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_math_facts_flu_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_math_facts_flu_pr" id="wj_math_facts_flu_pr" value={formData.wj_math_facts_flu_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium text-sm mb-2">11. Sentence Writing Fluency</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label htmlFor="wj_sent_write_flu_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_sent_write_flu_ss" id="wj_sent_write_flu_ss" value={formData.wj_sent_write_flu_ss || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_sent_write_flu_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_sent_write_flu_pr" id="wj_sent_write_flu_pr" value={formData.wj_sent_write_flu_pr || ''} onChange={handleInputChange} className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Toggle for Extended Battery */}
+                    <div className="mt-6 mb-4">
+                      <label htmlFor="includeExtendedBattery" className="flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          name="includeExtendedBattery" 
+                          id="includeExtendedBattery" 
+                          checked={formData.includeExtendedBattery || false} 
+                          onChange={handleInputChange}
+                          className="h-4 w-4 text-gold border-border rounded focus:ring-gold"
+                        />
+                        <span className="ml-2 text-sm font-medium text-text-primary">Include Extended Battery Subtests?</span>
+                      </label>
+                    </div>
+
+                    {/* Extended Battery Subtests (Conditional) */}
+                    {formData.includeExtendedBattery && (
+                      <div className="space-y-3 mt-4 pt-4 border-t border-border-secondary">
+                        <h4 className="text-md font-semibold mb-2 text-gold opacity-80">Extended Battery</h4>
+                        <p className="text-xs text-text-secondary">Extended battery subtest inputs will appear here.</p>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-4 border border-border rounded-md">
