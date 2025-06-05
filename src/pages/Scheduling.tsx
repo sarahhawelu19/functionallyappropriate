@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns';
+import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
   const [events, setEvents] = useState([
     { id: 1, title: 'IEP Meeting - John Smith', date: new Date(2025, 0, 15), time: '10:00 AM' },
     { id: 2, title: 'Parent Conference - Emily Johnson', date: new Date(2025, 0, 22), time: '2:30 PM' },
@@ -17,19 +19,25 @@ const Scheduling: React.FC = () => {
   const monthEnd = endOfMonth(currentMonth);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
   
-  // Create array for week day headers
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
-  // Get events for the selected month
   const monthEvents = events.filter(event => 
     isSameMonth(event.date, currentMonth)
   );
+
+  const handleScheduleMeeting = (meetingDetails: any) => {
+    console.log('Schedule Meeting:', meetingDetails);
+    // We will implement actual scheduling later
+  };
 
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-medium">Scheduling</h1>
-        <button className="btn bg-accent-teal">
+        <button 
+          className="btn bg-accent-teal"
+          onClick={() => setIsNewMeetingModalOpen(true)}
+        >
           <span className="flex items-center gap-1">
             <Plus size={18} />
             New Event
@@ -66,12 +74,10 @@ const Scheduling: React.FC = () => {
               </div>
             ))}
             
-            {/* Empty cells for days of the week before the first day of the month */}
             {Array.from({ length: getDay(monthStart) }).map((_, index) => (
               <div key={`empty-start-${index}`} className="h-20 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
             ))}
             
-            {/* Calendar days */}
             {monthDays.map(day => {
               const dayEvents = events.filter(event => 
                 event.date.getDate() === day.getDate() && 
@@ -98,7 +104,6 @@ const Scheduling: React.FC = () => {
               );
             })}
             
-            {/* Empty cells for days of the week after the last day of the month */}
             {Array.from({ length: 6 - getDay(monthEnd) }).map((_, index) => (
               <div key={`empty-end-${index}`} className="h-20 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
             ))}
@@ -129,12 +134,21 @@ const Scheduling: React.FC = () => {
             <p className="text-text-secondary py-4 text-center">No events scheduled for this month</p>
           )}
           
-          <button className="w-full mt-4 p-2 border border-teal text-teal rounded-md hover:bg-teal hover:bg-opacity-10 transition-all flex items-center justify-center gap-1">
+          <button 
+            className="w-full mt-4 p-2 border border-teal text-teal rounded-md hover:bg-teal hover:bg-opacity-10 transition-all flex items-center justify-center gap-1"
+            onClick={() => setIsNewMeetingModalOpen(true)}
+          >
             <Plus size={16} />
             Add Event
           </button>
         </div>
       </div>
+
+      <NewIEPMeetingModal
+        isOpen={isNewMeetingModalOpen}
+        onClose={() => setIsNewMeetingModalOpen(false)}
+        onScheduleMeeting={handleScheduleMeeting}
+      />
     </div>
   );
 };
