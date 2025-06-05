@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
+import { IEPMeeting } from '../data/schedulingMockData';
 
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const [events, setEvents] = useState([
-    { id: 1, title: 'IEP Meeting - John Smith', date: new Date(2025, 0, 15), time: '10:00 AM' },
-    { id: 2, title: 'Parent Conference - Emily Johnson', date: new Date(2025, 0, 22), time: '2:30 PM' },
-    { id: 3, title: 'Team Evaluation - Michael Davis', date: new Date(2025, 0, 28), time: '1:00 PM' },
-  ]);
+  const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -21,13 +18,13 @@ const Scheduling: React.FC = () => {
   
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
-  const monthEvents = events.filter(event => 
-    isSameMonth(event.date, currentMonth)
+  const monthEvents = iepMeetings.filter(meeting => 
+    isSameMonth(new Date(meeting.date), currentMonth)
   );
 
-  const handleScheduleMeeting = (meetingDetails: any) => {
-    console.log('Schedule Meeting:', meetingDetails);
-    // We will implement actual scheduling later
+  const handleScheduleMeeting = (newMeeting: IEPMeeting) => {
+    console.log('Schedule Meeting:', newMeeting);
+    setIepMeetings(prevMeetings => [...prevMeetings, newMeeting]);
   };
 
   return (
@@ -79,10 +76,8 @@ const Scheduling: React.FC = () => {
             ))}
             
             {monthDays.map(day => {
-              const dayEvents = events.filter(event => 
-                event.date.getDate() === day.getDate() && 
-                event.date.getMonth() === day.getMonth() &&
-                event.date.getFullYear() === day.getFullYear()
+              const dayMeetings = iepMeetings.filter(meeting => 
+                format(new Date(meeting.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
               );
               
               return (
@@ -94,9 +89,10 @@ const Scheduling: React.FC = () => {
                 >
                   <div className="text-sm font-medium">{format(day, 'd')}</div>
                   <div className="mt-1">
-                    {dayEvents.map(event => (
-                      <div key={event.id} className="text-xs p-1 bg-teal text-white rounded truncate mb-1">
-                        {event.time} - {event.title}
+                    {dayMeetings.map(meeting => (
+                      <div key={meeting.id} className="text-xs p-1 bg-teal text-white rounded truncate mb-1">
+                        {meeting.time} - {meeting.studentName}
+                        <div className="text-[10px] opacity-80">{meeting.meetingType}</div>
                       </div>
                     ))}
                   </div>
@@ -118,15 +114,17 @@ const Scheduling: React.FC = () => {
           
           {monthEvents.length > 0 ? (
             <div className="space-y-4">
-              {monthEvents.map(event => (
-                <div key={event.id} className="p-3 border border-border rounded-md hover:border-teal transition-all">
+              {monthEvents.map(meeting => (
+                <div key={meeting.id} className="p-3 border border-border rounded-md hover:border-teal transition-all">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-medium">{event.title}</h3>
+                    <h3 className="font-medium">{meeting.studentName}</h3>
                     <span className="text-sm bg-teal text-white px-2 py-0.5 rounded">
-                      {format(event.date, 'MMM d')}
+                      {format(new Date(meeting.date), 'MMM d')}
                     </span>
                   </div>
-                  <p className="text-sm text-text-secondary mt-1">{event.time}</p>
+                  <p className="text-sm text-text-secondary mt-1">
+                    {meeting.time} - {meeting.meetingType}
+                  </p>
                 </div>
               ))}
             </div>

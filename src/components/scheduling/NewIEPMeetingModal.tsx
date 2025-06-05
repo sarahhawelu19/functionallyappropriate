@@ -1,41 +1,12 @@
 import React, { useState } from 'react';
 import { X, Users, Calendar } from 'lucide-react';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-}
-
-interface MeetingDetails {
-  studentName: string;
-  meetingType: string;
-  customType?: string;
-  selectedTeamMembers: string[];
-}
+import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes } from '../../data/schedulingMockData';
 
 interface NewIEPMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onScheduleMeeting: (meetingDetails: MeetingDetails) => void;
+  onScheduleMeeting: (meetingDetails: IEPMeeting) => void;
 }
-
-const teamMembers: TeamMember[] = [
-  { id: 'tm1', name: 'Sarah Miller', role: 'Case Manager' },
-  { id: 'tm2', name: 'David Chen', role: 'Teacher' },
-  { id: 'tm3', name: 'Linda Kim', role: 'Speech Therapist' },
-  { id: 'tm4', name: 'Robert Davis', role: 'Principal (LEA)' },
-  { id: 'tm5', name: 'Emily White', role: 'Occupational Therapist' },
-  { id: 'tm6', name: 'Michael Brown', role: 'School Psychologist' },
-];
-
-const meetingTypes = [
-  'Annual IEP',
-  'Triennial IEP',
-  '30 Day IEP',
-  'Amendment IEP',
-  'Other',
-];
 
 const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   isOpen,
@@ -43,7 +14,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   onScheduleMeeting,
 }) => {
   const [studentName, setStudentName] = useState('');
-  const [meetingType, setMeetingType] = useState('');
+  const [meetingType, setMeetingType] = useState<MeetingType | ''>('');
   const [customType, setCustomType] = useState('');
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>([]);
 
@@ -57,12 +28,22 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onScheduleMeeting({
+    
+    const meetingDetails: IEPMeeting = {
+      id: Date.now().toString(),
+      eventType: 'iep_meeting',
       studentName,
-      meetingType: meetingType === 'Other' ? customType : meetingType,
-      customType: meetingType === 'Other' ? customType : undefined,
-      selectedTeamMembers,
-    });
+      meetingType: meetingType as MeetingType,
+      customMeetingType: meetingType === 'Other' ? customType : undefined,
+      teamMemberIds: selectedTeamMembers,
+      date: new Date().toISOString().split('T')[0], // Placeholder date
+      time: '10:00', // Placeholder time
+      durationMinutes: 60, // Placeholder duration
+      status: 'scheduled',
+      createdByUserId: 'currentUserPlaceholderId',
+    };
+
+    onScheduleMeeting(meetingDetails);
     onClose();
   };
 
@@ -111,7 +92,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
                 <select
                   id="meetingType"
                   value={meetingType}
-                  onChange={(e) => setMeetingType(e.target.value)}
+                  onChange={(e) => setMeetingType(e.target.value as MeetingType)}
                   className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-teal"
                   required
                 >
@@ -144,7 +125,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
                   <h3 className="font-medium">Select Team Members</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {teamMembers.map(member => (
+                  {mockTeamMembers.map(member => (
                     <label
                       key={member.id}
                       className="flex items-start gap-3 p-3 border border-border rounded-md hover:border-teal transition-colors cursor-pointer"
