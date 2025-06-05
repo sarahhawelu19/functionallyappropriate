@@ -62,6 +62,21 @@ const CreateReportPage: React.FC = () => {
   const [currentSubStep, setCurrentSubStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({});
 
+  // Standard Battery Subtests Configuration
+  const standardSubtests = [
+    { id: 'letter_word', name: '1. Letter-Word Identification' },
+    { id: 'applied_problems', name: '2. Applied Problems' },
+    { id: 'spelling', name: '3. Spelling' },
+    { id: 'passage_comp', name: '4. Passage Comprehension' },
+    { id: 'calculation', name: '5. Calculation' },
+    { id: 'writing_samples', name: '6. Writing Samples' },
+    { id: 'word_attack', name: '7. Word Attack' },
+    { id: 'oral_reading', name: '8. Oral Reading' },
+    { id: 'sent_read_flu', name: '9. Sentence Reading Fluency' },
+    { id: 'math_facts_flu', name: '10. Math Facts Fluency' },
+    { id: 'sent_write_flu', name: '11. Sentence Writing Fluency' }
+  ];
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
@@ -226,7 +241,61 @@ const CreateReportPage: React.FC = () => {
                   <div className="p-4 border border-border rounded-md animate-fadeIn">
                     <h3 className="text-lg font-semibold mb-3 text-gold">Student Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Student Information inputs */}
+                      <div>
+                        <label htmlFor="studentName" className="block text-sm font-medium mb-1">Student Name</label>
+                        <input
+                          type="text"
+                          name="studentName"
+                          id="studentName"
+                          value={formData.studentName || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="dob" className="block text-sm font-medium mb-1">Date of Birth</label>
+                        <input
+                          type="date"
+                          name="dob"
+                          id="dob"
+                          value={formData.dob || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="doe" className="block text-sm font-medium mb-1">Date of Evaluation</label>
+                        <input
+                          type="date"
+                          name="doe"
+                          id="doe"
+                          value={formData.doe || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="grade" className="block text-sm font-medium mb-1">Grade</label>
+                        <input
+                          type="text"
+                          name="grade"
+                          id="grade"
+                          value={formData.grade || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label htmlFor="examiner" className="block text-sm font-medium mb-1">Examiner</label>
+                        <input
+                          type="text"
+                          name="examiner"
+                          id="examiner"
+                          value={formData.examiner || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                        />
+                      </div>
                     </div>
                   </div>
                   )}
@@ -235,7 +304,83 @@ const CreateReportPage: React.FC = () => {
                   {currentSubStep === 2 && (
                   <div className="p-4 border border-border rounded-md animate-fadeIn">
                     <h3 className="text-lg font-semibold mb-3 text-gold">Woodcock-Johnson IV - Clusters</h3>
-                    {/* WJ IV Clusters inputs */}
+                    <div className="space-y-4">
+                      {/* Broad Achievement */}
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium mb-2">Broad Achievement</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label htmlFor="wj_broad_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_broad_ss" id="wj_broad_ss" value={formData.wj_broad_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_broad_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_broad_pr" id="wj_broad_pr" value={formData.wj_broad_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_broad_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                            <input type="text" name="wj_broad_range" id="wj_broad_range" value={formData.wj_broad_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Reading */}
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium mb-2">Reading</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label htmlFor="wj_reading_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_reading_ss" id="wj_reading_ss" value={formData.wj_reading_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_reading_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_reading_pr" id="wj_reading_pr" value={formData.wj_reading_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_reading_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                            <input type="text" name="wj_reading_range" id="wj_reading_range" value={formData.wj_reading_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Written Language */}
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium mb-2">Written Language</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label htmlFor="wj_written_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_written_ss" id="wj_written_ss" value={formData.wj_written_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_written_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_written_pr" id="wj_written_pr" value={formData.wj_written_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_written_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                            <input type="text" name="wj_written_range" id="wj_written_range" value={formData.wj_written_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Mathematics */}
+                      <div className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                        <h4 className="font-medium mb-2">Mathematics</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label htmlFor="wj_math_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                            <input type="number" name="wj_math_ss" id="wj_math_ss" value={formData.wj_math_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_math_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                            <input type="number" name="wj_math_pr" id="wj_math_pr" value={formData.wj_math_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                          <div>
+                            <label htmlFor="wj_math_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                            <input type="text" name="wj_math_range" id="wj_math_range" value={formData.wj_math_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   )}
 
@@ -243,7 +388,51 @@ const CreateReportPage: React.FC = () => {
                   {currentSubStep === 3 && (
                   <div className="p-4 border border-border rounded-md animate-fadeIn">
                     <h3 className="text-lg font-semibold mb-3 text-gold">Woodcock-Johnson IV - Standard Battery Subtests</h3>
-                    {/* Standard Battery Subtests inputs */}
+                    <div className="space-y-3">
+                      {standardSubtests.map(subtest => (
+                        <div key={subtest.id} className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                          <h4 className="font-medium text-sm mb-2">{subtest.name}</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label htmlFor={`wj_${subtest.id}_ss`} className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                              <input
+                                type="number"
+                                name={`wj_${subtest.id}_ss`}
+                                id={`wj_${subtest.id}_ss`}
+                                value={formData[`wj_${subtest.id}_ss` as keyof FormData] || ''}
+                                onChange={handleInputChange}
+                                className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor={`wj_${subtest.id}_pr`} className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                              <input
+                                type="number"
+                                name={`wj_${subtest.id}_pr`}
+                                id={`wj_${subtest.id}_pr`}
+                                value={formData[`wj_${subtest.id}_pr` as keyof FormData] || ''}
+                                onChange={handleInputChange}
+                                className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-6 mb-4">
+                      <label htmlFor="includeExtendedBattery" className="flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          name="includeExtendedBattery"
+                          id="includeExtendedBattery"
+                          checked={formData.includeExtendedBattery || false}
+                          onChange={handleInputChange}
+                          className="h-4 w-4 text-gold border-border rounded focus:ring-gold"
+                        />
+                        <span className="ml-2 text-sm font-medium text-text-primary">Include Extended Battery Subtests?</span>
+                      </label>
+                    </div>
                   </div>
                   )}
 
@@ -260,7 +449,96 @@ const CreateReportPage: React.FC = () => {
                   <div className="p-4 border border-border rounded-md animate-fadeIn">
                     <h3 className="text-lg font-semibold mb-3 text-gold">Narrative Sections</h3>
                     <div className="space-y-6">
-                      {/* Narrative section textareas */}
+                      <div>
+                        <label htmlFor="reasonForReferral" className="block text-sm font-medium mb-2">Reason for Referral</label>
+                        <textarea
+                          name="reasonForReferral"
+                          id="reasonForReferral"
+                          rows={3}
+                          value={formData.reasonForReferral || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Describe the reason for referral..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="backgroundInfo" className="block text-sm font-medium mb-2">Background Information</label>
+                        <textarea
+                          name="backgroundInfo"
+                          id="backgroundInfo"
+                          rows={4}
+                          value={formData.backgroundInfo || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Provide relevant background information..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="assessmentInstruments" className="block text-sm font-medium mb-2">Assessment Instruments Administered</label>
+                        <textarea
+                          name="assessmentInstruments"
+                          id="assessmentInstruments"
+                          rows={3}
+                          value={formData.assessmentInstruments || 'Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)\n'}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="List all assessment instruments used..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="behavioralObservations" className="block text-sm font-medium mb-2">Behavioral Observations</label>
+                        <textarea
+                          name="behavioralObservations"
+                          id="behavioralObservations"
+                          rows={4}
+                          value={formData.behavioralObservations || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Describe observations during assessment..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="narrativeInterpretation" className="block text-sm font-medium mb-2">Narrative Interpretation of Academic Scores</label>
+                        <textarea
+                          name="narrativeInterpretation"
+                          id="narrativeInterpretation"
+                          rows={5}
+                          value={formData.narrativeInterpretation || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Provide interpretation of academic scores..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="summaryOfFindings" className="block text-sm font-medium mb-2">Summary of Findings</label>
+                        <textarea
+                          name="summaryOfFindings"
+                          id="summaryOfFindings"
+                          rows={4}
+                          value={formData.summaryOfFindings || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Summarize key findings from assessment..."
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="recommendations" className="block text-sm font-medium mb-2">Recommendations</label>
+                        <textarea
+                          name="recommendations"
+                          id="recommendations"
+                          rows={4}
+                          value={formData.recommendations || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                          placeholder="Provide academic recommendations..."
+                        />
+                      </div>
                     </div>
                   </div>
                   )}
@@ -294,7 +572,9 @@ const CreateReportPage: React.FC = () => {
                       className="btn bg-accent-gold text-black"
                       disabled={currentSubStep === 5}
                     >
-                      {currentSubStep === 5 ? 'Finish Data Input' : 'Next'}
+                      {currentSubStep === 5 ? 'Finish Data Input' : 
+                       formData.includeExtendedBattery && currentSubStep === 4 ? 'Next: Narrative' :
+                       currentSubStep === 3 && !formData.includeExtendedBattery ? 'Next: Narrative' : 'Next'}
                     </button>
                   </div>
                 </div>
