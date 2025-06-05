@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 
 interface FormData {
   studentName?: string;
@@ -80,6 +81,26 @@ const CreateReportPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [currentSubStep, setCurrentSubStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({});
+  
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      setSelectedFile(file);
+      setCurrentStep(1);
+      setCurrentSubStep(1);
+      console.log('Dropped file:', file);
+    }
+  }, []);
+  
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt']
+    },
+    multiple: false
+  });
 
   // Standard Battery Subtests Configuration
   const standardSubtests = [
@@ -144,23 +165,36 @@ const CreateReportPage: React.FC = () => {
           currentAction === 'upload' ? (
             <>
               <h2 className="text-xl font-medium mb-4">Upload Your Report Template</h2>
-              <label htmlFor="template-upload" className="block">
-                <div className="p-10 border-2 border-dashed border-border rounded-md text-center hover:border-gold transition-all cursor-pointer bg-bg-secondary hover:bg-opacity-30">
-                  <UploadCloud size={48} className="text-text-secondary mx-auto mb-4" />
+              <div 
+                {...getRootProps()} 
+                className={`p-10 border-2 border-dashed rounded-md text-center transition-all cursor-pointer bg-bg-secondary hover:bg-opacity-30 
+                  ${isDragActive ? 'border-gold ring-2 ring-gold' : 'border-border hover:border-gold'}
+                  ${isDragAccept ? 'border-green bg-green bg-opacity-5' : ''}
+                  ${isDragReject ? 'border-red-500 bg-red-500 bg-opacity-5' : ''}`}
+              >
+                <input {...getInputProps()} />
+                <UploadCloud 
+                  size={48} 
+                  className={`mx-auto mb-4 ${
+                    isDragAccept ? 'text-green' :
+                    isDragReject ? 'text-red-500' :
+                    isDragActive ? 'text-gold' : 'text-text-secondary'
+                  }`} 
+                />
+                {isDragReject ? (
+                  <p className="font-medium text-red-500 mb-1">File type not accepted</p>
+                ) : isDragAccept ? (
+                  <p className="font-medium text-green mb-1">Drop to upload template</p>
+                ) : isDragActive ? (
+                  <p className="font-medium text-gold mb-1">Drop the file here</p>
+                ) : (
                   <p className="font-medium text-text-primary mb-1">Drag & drop your template file here</p>
-                  <p className="text-sm text-text-secondary mb-4">(.docx, .pdf, or .txt files)</p>
-                  <input
-                    type="file"
-                    id="template-upload"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept=".docx,.pdf,.txt"
-                  />
-                  <span className="mt-4 inline-block btn btn-primary">
-                    Or Click to Browse
-                  </span>
-                </div>
-              </label>
+                )}
+                <p className="text-sm text-text-secondary mb-4">(.docx, .pdf, or .txt files)</p>
+                <button type="button" className="mt-4 btn btn-primary">
+                  Or Click to Browse
+                </button>
+              </div>
               {selectedFile && (
                 <div className="mt-4 p-3 bg-bg-primary border border-border rounded-md">
                   <p className="text-sm font-medium text-text-primary">Selected file: {selectedFile.name}</p>
