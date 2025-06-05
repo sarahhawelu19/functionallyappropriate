@@ -8,9 +8,25 @@ interface FormData {
   doe?: string;
   grade?: string;
   examiner?: string;
+  reasonForReferral?: string;
+  backgroundInfo?: string;
+  assessmentInstruments?: string;
+  behavioralObservations?: string;
   wj_broad_ss?: string;
   wj_broad_pr?: string;
   wj_broad_range?: string;
+  wj_reading_ss?: string;
+  wj_reading_pr?: string;
+  wj_reading_range?: string;
+  wj_written_ss?: string;
+  wj_written_pr?: string;
+  wj_written_range?: string;
+  wj_math_ss?: string;
+  wj_math_pr?: string;
+  wj_math_range?: string;
+  narrativeInterpretation?: string;
+  summaryOfFindings?: string;
+  recommendations?: string;
 }
 
 const CreateReportPage: React.FC = () => {
@@ -215,6 +231,151 @@ const CreateReportPage: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-xs text-text-secondary mt-2">More cluster and subtest inputs will be added here.</p>
+                  </div>
+                  
+                  <div className="mb-4 p-3 border border-border-secondary rounded bg-bg-secondary">
+                    <h4 className="font-medium mb-2">Reading</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label htmlFor="wj_reading_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                        <input type="number" name="wj_reading_ss" id="wj_reading_ss" value={formData.wj_reading_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_reading_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                        <input type="number" name="wj_reading_pr" id="wj_reading_pr" value={formData.wj_reading_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_reading_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                        <input type="text" name="wj_reading_range" id="wj_reading_range" value={formData.wj_reading_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4 p-3 border border-border-secondary rounded bg-bg-secondary">
+                    <h4 className="font-medium mb-2">Written Language</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label htmlFor="wj_written_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                        <input type="number" name="wj_written_ss" id="wj_written_ss" value={formData.wj_written_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_written_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                        <input type="number" name="wj_written_pr" id="wj_written_pr" value={formData.wj_written_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_written_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                        <input type="text" name="wj_written_range" id="wj_written_range" value={formData.wj_written_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4 p-3 border border-border-secondary rounded bg-bg-secondary">
+                    <h4 className="font-medium mb-2">Mathematics</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label htmlFor="wj_math_ss" className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                        <input type="number" name="wj_math_ss" id="wj_math_ss" value={formData.wj_math_ss || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_math_pr" className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                        <input type="number" name="wj_math_pr" id="wj_math_pr" value={formData.wj_math_pr || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                      <div>
+                        <label htmlFor="wj_math_range" className="block text-xs font-medium mb-1">Descriptive Range</label>
+                        <input type="text" name="wj_math_range" id="wj_math_range" value={formData.wj_math_range || ''} onChange={handleInputChange} className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-gold" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Reason for Referral</h3>
+                    <textarea 
+                      name="reasonForReferral" 
+                      id="reasonForReferral" 
+                      rows={3} 
+                      value={formData.reasonForReferral || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Describe the reason for referral..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Background Information</h3>
+                    <textarea 
+                      name="backgroundInfo" 
+                      id="backgroundInfo" 
+                      rows={4} 
+                      value={formData.backgroundInfo || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Enter relevant background information..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Assessment Instruments</h3>
+                    <textarea 
+                      name="assessmentInstruments" 
+                      id="assessmentInstruments" 
+                      rows={3} 
+                      value={formData.assessmentInstruments || 'Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)\n'} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="List additional assessment instruments..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Behavioral Observations</h3>
+                    <textarea 
+                      name="behavioralObservations" 
+                      id="behavioralObservations" 
+                      rows={4} 
+                      value={formData.behavioralObservations || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Describe observations during assessment..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Narrative Interpretation</h3>
+                    <textarea 
+                      name="narrativeInterpretation" 
+                      id="narrativeInterpretation" 
+                      rows={5} 
+                      value={formData.narrativeInterpretation || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Provide interpretation of academic scores..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Summary of Findings</h3>
+                    <textarea 
+                      name="summaryOfFindings" 
+                      id="summaryOfFindings" 
+                      rows={4} 
+                      value={formData.summaryOfFindings || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Summarize key findings from assessment..."
+                    />
+                  </div>
+                  
+                  <div className="p-4 border border-border rounded-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gold">Recommendations</h3>
+                    <textarea 
+                      name="recommendations" 
+                      id="recommendations" 
+                      rows={4} 
+                      value={formData.recommendations || ''} 
+                      onChange={handleInputChange} 
+                      className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                      placeholder="Enter academic recommendations..."
+                    />
                   </div>
                 </>
               )}
