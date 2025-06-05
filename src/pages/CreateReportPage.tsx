@@ -15,6 +15,25 @@ interface FormData {
   includeExtendedBattery?: boolean;
   // Standard Battery Subtests
   wj_letter_word_ss?: string;
+  // Extended Battery Subtests
+  wj_read_recall_ss?: string;
+  wj_read_recall_pr?: string;
+  wj_num_matrices_ss?: string;
+  wj_num_matrices_pr?: string;
+  wj_editing_ss?: string;
+  wj_editing_pr?: string;
+  wj_word_read_flu_ss?: string;
+  wj_word_read_flu_pr?: string;
+  wj_spell_sounds_ss?: string;
+  wj_spell_sounds_pr?: string;
+  wj_read_vocab_ss?: string;
+  wj_read_vocab_pr?: string;
+  wj_science_ss?: string;
+  wj_science_pr?: string;
+  wj_social_studies_ss?: string;
+  wj_social_studies_pr?: string;
+  wj_humanities_ss?: string;
+  wj_humanities_pr?: string;
   wj_letter_word_pr?: string;
   wj_applied_problems_ss?: string;
   wj_applied_problems_pr?: string;
@@ -75,6 +94,18 @@ const CreateReportPage: React.FC = () => {
     { id: 'sent_read_flu', name: '9. Sentence Reading Fluency' },
     { id: 'math_facts_flu', name: '10. Math Facts Fluency' },
     { id: 'sent_write_flu', name: '11. Sentence Writing Fluency' }
+  ];
+
+  const extendedSubtests = [
+    { id: 'read_recall', name: '12. Reading Recall' },
+    { id: 'num_matrices', name: '13. Number Matrices' },
+    { id: 'editing', name: '14. Editing' },
+    { id: 'word_read_flu', name: '15. Word Reading Fluency' },
+    { id: 'spell_sounds', name: '16. Spelling of Sounds' },
+    { id: 'read_vocab', name: '17. Reading Vocabulary' },
+    { id: 'science', name: '18. Science' },
+    { id: 'social_studies', name: '19. Social Studies' },
+    { id: 'humanities', name: '20. Humanities' }
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -439,8 +470,38 @@ const CreateReportPage: React.FC = () => {
                   {/* Sub-Step 4: Extended Battery (if enabled) */}
                   {currentSubStep === 4 && formData.includeExtendedBattery && (
                   <div className="p-4 border border-border rounded-md animate-fadeIn">
-                    <h3 className="text-lg font-semibold mb-3 text-gold">Extended Battery Subtests</h3>
-                    <p className="text-xs text-text-secondary">Extended battery subtest inputs will appear here.</p>
+                    <h3 className="text-lg font-semibold mb-3 text-gold">Woodcock-Johnson IV - Extended Battery Subtests</h3>
+                    <div className="space-y-3">
+                      {extendedSubtests.map(subtest => (
+                        <div key={subtest.id} className="p-3 border border-border-secondary rounded bg-bg-secondary">
+                          <h4 className="font-medium text-sm mb-2">{subtest.name}</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label htmlFor={`wj_${subtest.id}_ss`} className="block text-xs font-medium mb-1">Standard Score (SS)</label>
+                              <input
+                                type="number"
+                                name={`wj_${subtest.id}_ss`}
+                                id={`wj_${subtest.id}_ss`}
+                                value={formData[`wj_${subtest.id}_ss` as keyof FormData] || ''}
+                                onChange={handleInputChange}
+                                className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor={`wj_${subtest.id}_pr`} className="block text-xs font-medium mb-1">Percentile Rank (PR)</label>
+                              <input
+                                type="number"
+                                name={`wj_${subtest.id}_pr`}
+                                id={`wj_${subtest.id}_pr`}
+                                value={formData[`wj_${subtest.id}_pr` as keyof FormData] || ''}
+                                onChange={handleInputChange}
+                                className="w-full p-1.5 border border-border rounded-md bg-bg-primary text-sm focus:outline-none focus:ring-1 focus:ring-gold"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   )}
 
