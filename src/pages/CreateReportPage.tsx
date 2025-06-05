@@ -706,3 +706,5 @@ const CreateReportPage: React.FC = () => {
 export default CreateReportPage;
 
 export default CreateReportPage
+
+export default CreateReportPage
