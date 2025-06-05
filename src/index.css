@@ -57,6 +57,20 @@
   }
 }
 
+/* Add animation for sub-step transitions */
+.animate-fadeIn {
+  animation: fadeInSimple 0.3s ease-in-out;
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer components {
   .btn {
     @apply px-4 py-2 rounded-md font-medium transition-all duration-200 
