@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
+import { useReports, Report } from '../context/ReportContext';
 import { useReports, Report } from '../context/ReportContext';
 
 interface FormData {
@@ -77,7 +78,9 @@ interface FormData {
 }
 
 const CreateReportPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { addReport } = useReports();
+  const navigate = useNavigate();
   const { addReport } = useReports();
   const navigate = useNavigate();
   const selectedTemplateId = searchParams.get('template');
@@ -87,6 +90,74 @@ const CreateReportPage: React.FC = () => {
   const [currentSubStep, setCurrentSubStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({});
   
+  // Draft functionality
+  const DRAFT_KEY = 'reportDraft';
+
+  interface DraftData {
+    formData: FormData;
+    selectedTemplateId: string | null;
+    currentStep: number;
+    currentSubStep: number;
+    selectedFile?: { name: string; type: string; size: number }; // Store minimal file info
+  }
+
+  const saveDraft = (data: DraftData) => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+      console.log("Draft saved:", data);
+    } catch (error) {
+      console.error("Error saving draft:", error);
+    }
+  };
+
+  const loadDraft = (): DraftData | null => {
+    try {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      return draft ? JSON.parse(draft) : null;
+    } catch (error) {
+      console.error("Error loading draft:", error);
+      return null;
+    }
+  };
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+      console.log("Draft cleared");
+    } catch (error) {
+      console.error("Error clearing draft:", error);
+    }
+  };
+
+  // Load draft on component mount
+  useEffect(() => {
+    const loadedDraft = loadDraft();
+    if (loadedDraft) {
+      if (window.confirm('You have a saved draft. Do you want to resume editing?')) {
+        setFormData(loadedDraft.formData);
+        // If we saved selectedTemplateId, we should navigate to reflect it.
+        if (loadedDraft.selectedTemplateId) {
+          setSearchParams({ template: loadedDraft.selectedTemplateId }, { replace: true });
+        } else {
+          // If no templateId was saved (e.g., it was an uploaded file flow)
+          // or if the action was 'upload', clear template search param.
+          searchParams.delete('template');
+          setSearchParams(searchParams, { replace: true });
+        }
+        setCurrentStep(loadedDraft.currentStep);
+        setCurrentSubStep(loadedDraft.currentSubStep);
+        if (loadedDraft.selectedFile) {
+          // We can't recreate the File object, but we can restore its info for display
+          console.log("Resumed draft with file info (actual file object not restored):", loadedDraft.selectedFile.name);
+        }
+        alert('Draft resumed!');
+      } else {
+        // User chose not to resume, so clear the draft
+        clearDraft();
+      }
+    }
+  }, [setSearchParams]);
+
   // Template data with full content for preview
   const fullTemplatesData = [
     {
@@ -508,6 +579,7 @@ Name: [STUDENT_NAME]
                         className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-4 py-1.5 text-sm flex items-center gap-1.5"
                         onClick={() => {
                           setSelectedFile(null); 
+                         clearDraft(); // Clear draft when explicitly choosing a new template from list
                         }}
                       >
                         Select this Template
@@ -524,6 +596,7 @@ Name: [STUDENT_NAME]
                   className="btn border border-border hover:border-gold text-gold"
                   onClick={() => {
                     setSelectedFile(null);
+                    clearDraft(); // Clear draft when explicitly choosing to upload
                   }}
                 >
                   Upload a Custom Template File
@@ -978,6 +1051,14 @@ Name: [STUDENT_NAME]
               <div className="flex justify-between items-center pt-4 border-t border-border">
                 <button 
                   onClick={() => {
+                    const draftData: DraftData = {
+                      formData,
+                      selectedTemplateId,
+                      currentStep: 2,
+                      currentSubStep: 5,
+                      selectedFile: selectedFile ? { name: selectedFile.name, type: selectedFile.type, size: selectedFile.size } : undefined
+                    };
+                    saveDraft(draftData);
                     setCurrentStep(2);
                     setCurrentSubStep(5);
                   }} 
@@ -986,7 +1067,20 @@ Name: [STUDENT_NAME]
                   Back to Edit Data
                 </button>
                 <div className="flex gap-3">
-                  <button className="btn border border-border hover:bg-bg-secondary">
+                  <button 
+                    onClick={() => {
+                      const draftData: DraftData = {
+                        formData,
+                        selectedTemplateId,
+                        currentStep, // Should be 3 when this button is visible
+                        currentSubStep, // Should be 1 (or relevant sub-step of Step 3 if we add them)
+                        selectedFile: selectedFile ? { name: selectedFile.name, type: selectedFile.type, size: selectedFile.size } : undefined
+                      };
+                      saveDraft(draftData);
+                      alert('Draft saved successfully!'); // Or use a more subtle notification
+                    }}
+                    className="btn border border-border hover:bg-bg-secondary"
+                  >
                     Save as Draft
                   </button>
                   <button 
@@ -1022,6 +1116,35 @@ Name: [STUDENT_NAME]
                           };
                           
                           addReport(newReportToAdd);
+                          navigate('/reports'); // Navigate back to the reports list
+                        } else {
+                          alert("Error: Could not find template information to save the report.");
+                        }
+                      } else {
+                        alert("Error: Student name and template are required to save the report.");
+                      }
+                    }}
+                    className="btn bg-accent-gold text-black"
+                  <button 
+                    onClick={() => {
+                      if (selectedTemplateId && formData.studentName) {
+                        const currentTemplateObject = fullTemplatesData.find(t => t.id === selectedTemplateId);
+                        if (currentTemplateObject) {
+                          const reportText = populateTemplate(currentTemplateObject.content, formData);
+                          
+                          const newReportToAdd: Report = {
+                            // id will be generated by addReport in context
+                            id: 0, // Temporary, will be overwritten
+                            name: `${formData.studentName} - ${currentTemplateObject.name}`,
+                            type: currentTemplateObject.name, // Or selectedTemplateId for a more programmatic type
+                            date: new Date().toISOString().split('T')[0], // Today's date
+                            status: 'Completed', // Or 'Draft' if you prefer
+                            content: reportText,
+                            formData: { ...formData } // Store a copy of the form data
+                          };
+                          
+                          addReport(newReportToAdd);
+                          clearDraft(); // Clear draft after finalizing
                           navigate('/reports'); // Navigate back to the reports list
                         } else {
                           alert("Error: Could not find template information to save the report.");
