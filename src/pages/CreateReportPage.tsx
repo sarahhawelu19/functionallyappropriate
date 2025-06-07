@@ -220,6 +220,19 @@ Name: [STUDENT_NAME]
     return populatedContent;
   };
 
+  const downloadTextFile = (filename: string, text: string) => {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  };
+
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
@@ -879,6 +892,26 @@ Name: [STUDENT_NAME]
                 <div className="flex gap-3">
                   <button className="btn border border-border hover:bg-bg-secondary">
                     Save as Draft
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (selectedTemplateId) {
+                        const currentTemplateObject = fullTemplatesData.find(t => t.id === selectedTemplateId);
+                        if (currentTemplateObject) {
+                          const reportText = populateTemplate(currentTemplateObject.content, formData);
+                          const studentNameSanitized = (formData.studentName || 'Student').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                          const filename = `${studentNameSanitized}_${selectedTemplateId}_Report.txt`;
+                          downloadTextFile(filename, reportText);
+                        } else {
+                          alert("Error: Could not find template to generate download.");
+                        }
+                      } else {
+                        alert("Error: No template selected for download.");
+                      }
+                    }}
+                    className="btn bg-accent-teal"
+                  >
+                    Download Report (.txt)
                   </button>
                   <button className="btn bg-accent-gold text-black">
                     Generate Final Report
