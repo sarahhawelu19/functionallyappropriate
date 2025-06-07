@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Users, Calendar } from 'lucide-react';
-import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes } from '../../data/schedulingMockData';
+import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes, StudentProfile, mockStudents } from '../../data/schedulingMockData';
 
 interface NewIEPMeetingModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   onClose,
   onScheduleMeeting,
 }) => {
-  const [studentName, setStudentName] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [meetingType, setMeetingType] = useState<MeetingType | ''>('');
   const [customType, setCustomType] = useState('');
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>([]);
@@ -29,10 +29,14 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const student = mockStudents.find(s => s.id === selectedStudentId);
+    const studentNameForMeeting = student ? student.name : 'Unknown Student';
+    
     const meetingDetails: IEPMeeting = {
       id: Date.now().toString(),
       eventType: 'iep_meeting',
-      studentName,
+      studentId: selectedStudentId,
+      studentName: studentNameForMeeting,
       meetingType: meetingType as MeetingType,
       customMeetingType: meetingType === 'Other' ? customType : undefined,
       teamMemberIds: selectedTeamMembers,
@@ -72,17 +76,23 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
           <form onSubmit={handleSubmit} className="p-6">
             <div className="space-y-6">
               <div>
-                <label htmlFor="studentName" className="block text-sm font-medium mb-1">
-                  Student Name
+                <label htmlFor="selectedStudent" className="block text-sm font-medium mb-1">
+                  Select Student
                 </label>
-                <input
-                  type="text"
-                  id="studentName"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
+                <select
+                  id="selectedStudent"
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
                   className="w-full p-2 border border-border rounded-md bg-bg-primary focus:outline-none focus:ring-2 focus:ring-teal"
                   required
-                />
+                >
+                  <option value="">Select Student</option>
+                  {mockStudents.map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -157,7 +167,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
               <button
                 type="submit"
                 className="px-4 py-2 bg-teal text-white rounded-md hover:bg-opacity-90 transition-colors"
-                disabled={!studentName || !meetingType || (meetingType === 'Other' && !customType)}
+                disabled={!selectedStudentId || !meetingType || (meetingType === 'Other' && !customType)}
               >
                 Find Availability & Schedule
               </button>
