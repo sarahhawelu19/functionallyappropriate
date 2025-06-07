@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { useReports } from '../context/ReportContext';
 import mammoth from 'mammoth';
+import TemplateEditorModal from '../components/modals/TemplateEditorModal';
 
 const ReportDrafting: React.FC = () => {
   const { reports } = useReports();
@@ -208,6 +209,23 @@ const ReportDrafting: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Inside ReportDrafting component
+  const handleSaveCustomTemplate = (name: string, contentHtml: string, placeholderKeys: string[]) => {
+    console.log('Saving custom template:', { name, contentHtml, placeholderKeys });
+    // Later: Add logic to save this to context or Supabase
+    // For now, maybe add to a local state to see it in the list for testing
+    const newCustomTemplate = {
+      id: `custom-${Date.now()}`,
+      name: name,
+      description: `Custom template: ${name.substring(0, 50)}...`,
+      content: contentHtml, // Storing HTML content for now
+      // We'll need to decide how to handle 'content' for custom templates vs predefined markdown ones.
+      // For now, this will make the preview show raw HTML.
+    };
+    // setTemplates(prev => [...prev, newCustomTemplate]); // If 'templates' was state
+    alert(`Template "${name}" would be saved. See console for details.`);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -409,17 +427,13 @@ const ReportDrafting: React.FC = () => {
         </div>
       </div>
       
-      {isTemplateEditorModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-bg-primary p-6 rounded-lg shadow-xl w-full max-w-2xl">
-            <h2 className="text-xl font-semibold mb-4">Template Editor Placeholder</h2>
-            <p className="text-text-secondary mb-2">Name: {newTemplateInitialName}</p>
-            <p className="text-text-secondary mb-4">HTML Content will be editable here.</p>
-            <div className="h-64 overflow-auto border border-border p-2 mb-4" dangerouslySetInnerHTML={{ __html: newTemplateInitialContent }} />
-            <button onClick={() => setIsTemplateEditorModalOpen(false)} className="btn">Close Placeholder</button>
-          </div>
-        </div>
-      )}
+      <TemplateEditorModal
+        isOpen={isTemplateEditorModalOpen}
+        onClose={() => setIsTemplateEditorModalOpen(false)}
+        initialContentHtml={newTemplateInitialContent}
+        initialName={newTemplateInitialName}
+        onSave={handleSaveCustomTemplate}
+      />
     </div>
   );
 };
