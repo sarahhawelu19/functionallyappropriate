@@ -145,6 +145,35 @@
 }
 
 /* Animations */
+
+/* Quill Editor Styling */
+.quill-editor-container .ql-container {
+  height: 100% !important;
+  min-height: 300px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.quill-editor-container .ql-editor {
+  min-height: 300px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Dark mode support for Quill editor */
+.dark .quill-editor-container .ql-toolbar {
+  border-color: rgb(var(--color-border));
+  background-color: rgb(var(--color-bg-secondary));
+}
+
+.dark .quill-editor-container .ql-container {
+  border-color: rgb(var(--color-border));
+}
+
+.dark .quill-editor-container .ql-editor {
+  background-color: white;
+  color: #333;
+}
+
 .fade-enter {
   opacity: 0;
 }
