@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Users, Calendar } from 'lucide-react';
 import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes, StudentProfile, mockStudents } from '../../data/schedulingMockData';
 
@@ -6,17 +6,35 @@ interface NewIEPMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onScheduleMeeting: (meetingDetails: Partial<IEPMeeting>) => void;
+  initialProposal?: Partial<IEPMeeting> | null;
 }
 
 const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   isOpen,
   onClose,
   onScheduleMeeting,
+  initialProposal,
 }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [meetingType, setMeetingType] = useState<MeetingType | ''>('');
   const [customType, setCustomType] = useState('');
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>([]);
+
+  // Initialize form state from initialProposal when modal opens or proposal changes
+  useEffect(() => {
+    if (isOpen && initialProposal) {
+      setSelectedStudentId(initialProposal.studentId || '');
+      setMeetingType(initialProposal.meetingType || '');
+      setCustomType(initialProposal.customMeetingType || '');
+      setSelectedTeamMembers(initialProposal.teamMemberIds || []);
+    } else if (isOpen && !initialProposal) {
+      // Reset to empty state if no proposal exists
+      setSelectedStudentId('');
+      setMeetingType('');
+      setCustomType('');
+      setSelectedTeamMembers([]);
+    }
+  }, [isOpen, initialProposal]);
 
   const handleTeamMemberToggle = (memberId: string) => {
     setSelectedTeamMembers(prev =>
@@ -45,20 +63,17 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
     };
 
     onScheduleMeeting(meetingDetails);
-    
-    // Reset form
-    setSelectedStudentId('');
-    setMeetingType('');
-    setCustomType('');
-    setSelectedTeamMembers([]);
+    onClose();
   };
 
   const handleClose = () => {
-    // Reset form when closing
-    setSelectedStudentId('');
-    setMeetingType('');
-    setCustomType('');
-    setSelectedTeamMembers([]);
+    // Only reset form when closing if there's no active proposal to preserve
+    if (!initialProposal) {
+      setSelectedStudentId('');
+      setMeetingType('');
+      setCustomType('');
+      setSelectedTeamMembers([]);
+    }
     onClose();
   };
 
