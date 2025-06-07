@@ -1016,3 +1016,5 @@ export default CreateReportPage;
 export default CreateReportPage
 
 export default CreateReportPage
+
+export default CreateReportPage
