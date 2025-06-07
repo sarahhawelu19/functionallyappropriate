@@ -3,19 +3,36 @@ import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSq
 import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { useReports } from '../context/ReportContext';
+import mammoth from 'mammoth';
 
 const ReportDrafting: React.FC = () => {
   const { reports } = useReports();
   
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isTemplateEditorModalOpen, setIsTemplateEditorModalOpen] = useState(false);
+  const [newTemplateInitialContent, setNewTemplateInitialContent] = useState(''); // Will store HTML
+  const [newTemplateInitialName, setNewTemplateInitialName] = useState('');
   
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => { // Make async
     if (acceptedFiles && acceptedFiles.length > 0) {
-      console.log('Dropped file:', acceptedFiles[0]);
-      // Handle the uploaded file here
+      const file = acceptedFiles[0];
+      if (file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          setNewTemplateInitialContent(result.value); // HTML string
+          setNewTemplateInitialName(file.name.replace(/\.docx$/, "")); // Remove .docx extension
+          setIsTemplateEditorModalOpen(true);
+        } catch (error) {
+          console.error("Error converting DOCX to HTML:", error);
+          alert("Could not process the DOCX file. It might be corrupted or an unsupported format.");
+        }
+      } else {
+        alert("Only .docx files are currently supported for creating custom templates.");
+      }
     }
-  }, []);
+  }, []); // No dependencies that would cause re-creation, setters are stable
   
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     onDrop,
@@ -391,6 +408,18 @@ const ReportDrafting: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {isTemplateEditorModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-bg-primary p-6 rounded-lg shadow-xl w-full max-w-2xl">
+            <h2 className="text-xl font-semibold mb-4">Template Editor Placeholder</h2>
+            <p className="text-text-secondary mb-2">Name: {newTemplateInitialName}</p>
+            <p className="text-text-secondary mb-4">HTML Content will be editable here.</p>
+            <div className="h-64 overflow-auto border border-border p-2 mb-4" dangerouslySetInnerHTML={{ __html: newTemplateInitialContent }} />
+            <button onClick={() => setIsTemplateEditorModalOpen(false)} className="btn">Close Placeholder</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
