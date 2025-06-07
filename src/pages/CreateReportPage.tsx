@@ -5,7 +5,6 @@ import { useDropzone } from 'react-dropzone';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 import { useReports, Report } from '../context/ReportContext';
-import { useReports, Report } from '../context/ReportContext';
 
 interface FormData {
   studentName?: string;
