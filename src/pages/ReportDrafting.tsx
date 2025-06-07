@@ -2,13 +2,10 @@ import React, { useState } from 'react';
 import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight, UploadCloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import { useReports } from '../context/ReportContext';
 
 const ReportDrafting: React.FC = () => {
-  const [reports, setReports] = useState([
-    { id: 1, name: 'John Smith', type: 'Progress Report', date: '2025-01-15', status: 'Draft' },
-    { id: 2, name: 'Emily Johnson', type: 'Initial Evaluation', date: '2025-02-10', status: 'Completed' },
-    { id: 3, name: 'Michael Davis', type: 'Triennial Review', date: '2025-03-05', status: 'In Progress' },
-  ]);
+  const { reports } = useReports();
   
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
