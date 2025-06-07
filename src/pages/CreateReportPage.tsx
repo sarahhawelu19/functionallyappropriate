@@ -1014,3 +1014,5 @@ Name: [STUDENT_NAME]
 export default CreateReportPage;
 
 export default CreateReportPage
+
+export default CreateReportPage
