@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { saveAs } from 'file-saver';
 
 interface FormData {
   studentName?: string;
