@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <h1 className="text-xl font-medium tracking-tight">IEP Case Manager</h1>
+        <h1 className="text-xl font-medium tracking-tight">BetterSPED</h1>
       </div>
       
       <div className="flex items-center space-x-2">
