@@ -23,7 +23,7 @@
 }
 
 .dark {
-  --color-bg-primary: 17 24 39;
+  --color-bg-primary: var(--color-black);
   --color-bg-secondary: 31 41 55;
   --color-text-primary: 243 244 246;
   --color-text-secondary: 209 213 219;
@@ -54,6 +54,35 @@
   
   h3 {
     @apply text-lg sm:text-xl;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeInSimple 0.3s ease-in-out;
+  }
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Add animation for sub-step transitions */
+.animate-fadeIn {
+  animation: fadeInSimple 0.3s ease-in-out;
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
