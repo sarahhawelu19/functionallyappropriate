@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Import Quill styles
 
@@ -32,6 +32,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
   const [definedPlaceholders, setDefinedPlaceholders] = useState<Array<{ name: string; key: string }>>([]);
   const [isDefinePlaceholderModalOpen, setIsDefinePlaceholderModalOpen] = useState(false);
   const [currentPlaceholderName, setCurrentPlaceholderName] = useState('');
+  const quillRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,6 +51,32 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
     const placeholderKeys = definedPlaceholders.map(p => p.key);
     onSave(templateName, editorHtml, placeholderKeys); 
     onClose();
+  };
+
+  const handleAddPlaceholderToListAndEditor = () => {
+    if (!currentPlaceholderName.trim()) return;
+
+    const placeholderKey = toUpperSnakeCase(currentPlaceholderName.trim());
+    if (definedPlaceholders.some(p => p.key === placeholderKey)) {
+      alert(`A placeholder with the key "[${placeholderKey}]" already exists. Please choose a different display name.`);
+      return;
+    }
+
+    const newPlaceholder = { name: currentPlaceholderName.trim(), key: placeholderKey };
+    setDefinedPlaceholders(prev => [...prev, newPlaceholder]);
+
+    const editor = quillRef.current?.getEditor();
+    if (editor) {
+      const range = editor.getSelection(true); // Get current selection or cursor position
+      const positionToInsert = range ? range.index : editor.getLength(); // Insert at cursor or end
+      
+      editor.insertText(positionToInsert, `[${placeholderKey}]`);
+      // Optionally, move cursor after inserted text
+      editor.setSelection(positionToInsert + `[${placeholderKey}]`.length, 0);
+    }
+
+    setCurrentPlaceholderName('');
+    setIsDefinePlaceholderModalOpen(false);
   };
 
   // Basic Quill modules and formats
@@ -93,6 +120,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
         <div className="mb-4 flex-grow min-h-[400px] flex flex-col"> {/* Ensure editor has space and flex layout */}
           <label className="block text-sm font-medium mb-1 text-text-secondary">Template Content:</label>
           <ReactQuill 
+            ref={quillRef}
             theme="snow" 
             value={editorHtml} 
             onChange={setEditorHtml} 
@@ -161,7 +189,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
               <div className="mt-6 flex justify-end gap-3">
                 <button onClick={() => setIsDefinePlaceholderModalOpen(false)} className="btn border border-border">Cancel</button>
                 <button 
-                  // onClick={handleAddPlaceholderToListAndEditor} // Next step
+                  onClick={handleAddPlaceholderToListAndEditor}
                   className="btn bg-green-500 hover:bg-green-600 text-white"
                   disabled={!currentPlaceholderName.trim()}
                 >
