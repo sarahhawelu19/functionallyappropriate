@@ -80,8 +80,6 @@ const CreateReportPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addReport } = useReports();
   const navigate = useNavigate();
-  const { addReport } = useReports();
-  const navigate = useNavigate();
   const selectedTemplateId = searchParams.get('template');
   const currentAction = searchParams.get('action');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
