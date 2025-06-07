@@ -27,6 +27,7 @@
     "vite": "^5.4.2"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "lucide-react": "^0.446.0",
     "react": "^18.3.1",
     "@types/file-saver": "^2.0.7",
