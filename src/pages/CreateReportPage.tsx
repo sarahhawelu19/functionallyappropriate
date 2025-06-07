@@ -76,7 +76,17 @@ interface FormData {
   recommendations?: string;
 }
 
+interface DraftData {
+  formData: FormData;
+  selectedTemplateId: string | null;
+  currentStep: number;
+  currentSubStep: number;
+  selectedFile?: { name: string; type: string; size: number }; // Store minimal file info
+}
+
 const CreateReportPage: React.FC = () => {
+  const DRAFT_KEY = 'reportDraft';
+  
   const [searchParams] = useSearchParams();
   const { addReport } = useReports();
   const navigate = useNavigate();
@@ -88,6 +98,38 @@ const CreateReportPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({});
   
   // Template data with full content for preview
+  const saveDraft = (data: DraftData) => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+      console.log("Draft data prepared for saving:", data); // For debugging
+    } catch (error) {
+      console.error("Error saving draft:", error);
+    }
+  };
+
+  const loadDraft = (): DraftData | null => {
+    try {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) {
+        console.log("Draft loaded from localStorage."); // For debugging
+        return JSON.parse(draft);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error loading draft:", error);
+      return null;
+    }
+  };
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+      console.log("Draft cleared from localStorage."); // For debugging
+    } catch (error) {
+      console.error("Error clearing draft:", error);
+    }
+  };
+
   const fullTemplatesData = [
     {
       id: 'academic-achievement',
