@@ -60,13 +60,14 @@ const Scheduling: React.FC = () => {
       
       // Clear proposal after successful scheduling
       setCurrentMeetingProposal(null);
-      // setViewMode('initial'); // Uncomment to return to initial view after scheduling
+      setViewMode('initial'); // Return to initial view after scheduling
     }
   };
 
   const handleBackToInitial = () => {
-    // Only change view mode, preserve currentMeetingProposal for re-opening modal
+    // Set view mode to initial and immediately reopen the modal with the current proposal
     setViewMode('initial');
+    setIsNewMeetingModalOpen(true);
   };
 
   const getTeamMemberNames = (teamMemberIds: string[]) => {
@@ -95,29 +96,15 @@ const Scheduling: React.FC = () => {
                 among all required team members.
               </p>
               
-              {/* Show different button text if there's an active proposal */}
               <button 
                 className="btn bg-accent-teal text-lg px-8 py-4"
                 onClick={() => setIsNewMeetingModalOpen(true)}
               >
                 <span className="flex items-center gap-2">
                   <Plus size={24} />
-                  {currentMeetingProposal ? 'Continue Scheduling Meeting' : 'Schedule New IEP Meeting'}
+                  Schedule New IEP Meeting
                 </span>
               </button>
-              
-              {/* Show proposal summary if one exists */}
-              {currentMeetingProposal && (
-                <div className="mt-6 p-4 bg-teal bg-opacity-10 border border-teal rounded-md max-w-md mx-auto">
-                  <h3 className="font-medium text-sm mb-2">Active Meeting Proposal</h3>
-                  <p className="text-sm text-text-secondary">
-                    {currentMeetingProposal.meetingType} for {currentMeetingProposal.studentName}
-                  </p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    Click the button above to continue or modify this proposal
-                  </p>
-                </div>
-              )}
             </div>
           </div>
           
@@ -344,6 +331,14 @@ const Scheduling: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal is rendered here when opened via Back button */}
+      <NewIEPMeetingModal
+        isOpen={isNewMeetingModalOpen}
+        onClose={() => setIsNewMeetingModalOpen(false)}
+        onScheduleMeeting={handleScheduleMeeting}
+        initialProposal={currentMeetingProposal}
+      />
     </div>
   );
 };
