@@ -11,6 +11,15 @@ interface TemplateEditorModalProps {
   // placeholderKeys will be used later
 }
 
+// Utility function to convert text to UPPER_SNAKE_CASE
+const toUpperSnakeCase = (text: string): string => {
+  return text
+    .trim()
+    .replace(/[^\w\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .toUpperCase();
+};
+
 const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({ 
   isOpen, 
   onClose, 
@@ -20,13 +29,16 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
 }) => {
   const [editorHtml, setEditorHtml] = useState('');
   const [templateName, setTemplateName] = useState('');
-  // Later, we'll add state for managing identified placeholders:
-  // const [placeholders, setPlaceholders] = useState<Array<{name: string, key: string}>>([]);
+  const [definedPlaceholders, setDefinedPlaceholders] = useState<Array<{ name: string; key: string }>>([]);
+  const [isDefinePlaceholderModalOpen, setIsDefinePlaceholderModalOpen] = useState(false);
+  const [currentPlaceholderName, setCurrentPlaceholderName] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setEditorHtml(initialContentHtml);
       setTemplateName(initialName);
+      setDefinedPlaceholders([]); // Reset placeholders when modal opens
+      setCurrentPlaceholderName('');
     }
   }, [isOpen, initialContentHtml, initialName]);
 
@@ -35,8 +47,8 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
   }
 
   const handleSave = () => {
-    // For now, placeholderKeys is empty. We will implement placeholder identification later.
-    onSave(templateName, editorHtml, []); 
+    const placeholderKeys = definedPlaceholders.map(p => p.key);
+    onSave(templateName, editorHtml, placeholderKeys); 
     onClose();
   };
 
@@ -91,9 +103,28 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
           />
         </div>
         
-        {/* Placeholder for "Add Placeholder" button and list - for Phase B */}
-        <div className="mb-4 p-3 border-t border-border">
-             <p className="text-xs text-text-secondary">Placeholder management UI will go here.</p>
+        <div className="mb-4 p-3 border-t border-b border-border">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-md font-semibold text-text-primary">Manage Placeholders</h4>
+            <button 
+              onClick={() => {
+                setCurrentPlaceholderName(''); // Reset for new placeholder
+                setIsDefinePlaceholderModalOpen(true);
+              }}
+              className="btn-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs"
+            >
+              Add Placeholder
+            </button>
+          </div>
+          {definedPlaceholders.length > 0 ? (
+            <ul className="list-disc list-inside pl-1 text-sm text-text-secondary max-h-24 overflow-y-auto">
+              {definedPlaceholders.map(p => (
+                <li key={p.key}><strong>{p.name}</strong> (Key: <code>[{p.key}]</code>)</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-text-secondary italic">No placeholders defined yet. Click "Add Placeholder" to create one and insert it into your template content.</p>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-border">
@@ -108,6 +139,38 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
             Save Template
           </button>
         </div>
+        
+        {isDefinePlaceholderModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[60] p-4 animate-fadeIn"> {/* Higher z-index */}
+            <div className="bg-bg-primary p-6 rounded-lg shadow-xl w-full max-w-md">
+              <h3 className="text-lg font-semibold mb-4">Define New Placeholder</h3>
+              <div>
+                <label htmlFor="placeholderNameInput" className="block text-sm font-medium mb-1">Placeholder Display Name:</label>
+                <input 
+                  type="text" 
+                  id="placeholderNameInput"
+                  className="w-full p-2 border border-border rounded-md bg-bg-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                  value={currentPlaceholderName}
+                  onChange={(e) => setCurrentPlaceholderName(e.target.value)}
+                  placeholder="e.g., Student Full Name"
+                />
+                <p className="text-xs text-text-secondary mt-1">
+                  System Key (auto-generated): <code>[{toUpperSnakeCase(currentPlaceholderName || 'NEW_PLACEHOLDER')}]</code>
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => setIsDefinePlaceholderModalOpen(false)} className="btn border border-border">Cancel</button>
+                <button 
+                  // onClick={handleAddPlaceholderToListAndEditor} // Next step
+                  className="btn bg-green-500 hover:bg-green-600 text-white"
+                  disabled={!currentPlaceholderName.trim()}
+                >
+                  Save & Insert Placeholder
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
