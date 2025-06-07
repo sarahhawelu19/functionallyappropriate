@@ -53,9 +53,9 @@ export interface IEPMeeting {
   meetingType: MeetingType;
   customMeetingType?: string;
   teamMemberIds: string[];
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM
-  durationMinutes: number;
+  date?: string; // YYYY-MM-DD - now optional for intermediate state
+  time?: string; // HH:MM - now optional for intermediate state
+  durationMinutes?: number; // now optional for intermediate state
   status: 'pending_scheduling' | 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
   createdByUserId: string;

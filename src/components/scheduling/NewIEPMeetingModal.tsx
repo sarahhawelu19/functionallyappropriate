@@ -5,7 +5,7 @@ import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes, Stu
 interface NewIEPMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onScheduleMeeting: (meetingDetails: IEPMeeting) => void;
+  onScheduleMeeting: (meetingDetails: Partial<IEPMeeting>) => void;
 }
 
 const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
@@ -32,7 +32,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
     const student = mockStudents.find(s => s.id === selectedStudentId);
     const studentNameForMeeting = student ? student.name : 'Unknown Student';
     
-    const meetingDetails: IEPMeeting = {
+    const meetingDetails: Partial<IEPMeeting> = {
       id: Date.now().toString(),
       eventType: 'iep_meeting',
       studentId: selectedStudentId,
@@ -40,14 +40,25 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
       meetingType: meetingType as MeetingType,
       customMeetingType: meetingType === 'Other' ? customType : undefined,
       teamMemberIds: selectedTeamMembers,
-      date: new Date().toISOString().split('T')[0], // Placeholder date
-      time: '10:00', // Placeholder time
-      durationMinutes: 60, // Placeholder duration
-      status: 'scheduled',
+      status: 'pending_scheduling',
       createdByUserId: 'currentUserPlaceholderId',
     };
 
     onScheduleMeeting(meetingDetails);
+    
+    // Reset form
+    setSelectedStudentId('');
+    setMeetingType('');
+    setCustomType('');
+    setSelectedTeamMembers([]);
+  };
+
+  const handleClose = () => {
+    // Reset form when closing
+    setSelectedStudentId('');
+    setMeetingType('');
+    setCustomType('');
+    setSelectedTeamMembers([]);
     onClose();
   };
 
@@ -55,7 +66,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={handleClose} />
       
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-2xl bg-bg-primary rounded-lg shadow-lg">
@@ -65,7 +76,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
               <h2 className="text-xl font-medium">Schedule New IEP Meeting</h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-1 hover:bg-bg-secondary rounded-full transition-colors"
               aria-label="Close modal"
             >
@@ -159,7 +170,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
             <div className="flex justify-end gap-3 mt-8">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="px-4 py-2 border border-border rounded-md hover:bg-bg-secondary transition-colors"
               >
                 Cancel
@@ -169,7 +180,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
                 className="px-4 py-2 bg-teal text-white rounded-md hover:bg-opacity-90 transition-colors"
                 disabled={!selectedStudentId || !meetingType || (meetingType === 'Other' && !customType)}
               >
-                Find Availability & Schedule
+                Next: View Availability
               </button>
             </div>
           </form>
