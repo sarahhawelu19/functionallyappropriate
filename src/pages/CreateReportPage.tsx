@@ -82,6 +82,144 @@ const CreateReportPage: React.FC = () => {
   const [currentSubStep, setCurrentSubStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({});
   
+  // Template data with full content for preview
+  const fullTemplatesData = [
+    {
+      id: 'academic-achievement',
+      name: 'Academic Achievement Report',
+      description: 'Comprehensive report on student academic skills, often using WJ IV, WIAT, etc.',
+      content: `# ACADEMIC ACHIEVEMENT REPORT
+
+## Student Information
+Name: [STUDENT_NAME]
+Date of Birth: [DOB]
+Date of Evaluation: [DOE]
+Grade: [GRADE]
+Examiner: [EXAMINER]
+
+## Reason for Referral
+[REASON_FOR_REFERRAL]
+
+## Background Information
+[BACKGROUND_INFO]
+
+## Assessment Instruments Administered
+[ASSESSMENT_INSTRUMENTS]
+
+## Behavioral Observations
+[BEHAVIORAL_OBSERVATIONS]
+
+## Test Results & Interpretation
+### Woodcock-Johnson IV Tests of Achievement
+**Clusters:**
+- Broad Achievement: SS [WJ_BROAD_SS], PR [WJ_BROAD_PR], Range [WJ_BROAD_RANGE]
+- Reading: SS [WJ_READING_SS], PR [WJ_READING_PR], Range [WJ_READING_RANGE]
+- Written Language: SS [WJ_WRITTEN_SS], PR [WJ_WRITTEN_PR], Range [WJ_WRITTEN_RANGE]
+- Mathematics: SS [WJ_MATH_SS], PR [WJ_MATH_PR], Range [WJ_MATH_RANGE]
+
+**Standard Battery Subtests:**
+- Letter-Word Identification: SS [WJ_LETTER_WORD_SS], PR [WJ_LETTER_WORD_PR]
+- Applied Problems: SS [WJ_APPLIED_PROBLEMS_SS], PR [WJ_APPLIED_PROBLEMS_PR]
+- Spelling: SS [WJ_SPELLING_SS], PR [WJ_SPELLING_PR]
+- Passage Comprehension: SS [WJ_PASSAGE_COMP_SS], PR [WJ_PASSAGE_COMP_PR]
+- Calculation: SS [WJ_CALCULATION_SS], PR [WJ_CALCULATION_PR]
+- Writing Samples: SS [WJ_WRITING_SAMPLES_SS], PR [WJ_WRITING_SAMPLES_PR]
+- Word Attack: SS [WJ_WORD_ATTACK_SS], PR [WJ_WORD_ATTACK_PR]
+- Oral Reading: SS [WJ_ORAL_READING_SS], PR [WJ_ORAL_READING_PR]
+- Sentence Reading Fluency: SS [WJ_SENT_READ_FLU_SS], PR [WJ_SENT_READ_FLU_PR]
+- Math Facts Fluency: SS [WJ_MATH_FACTS_FLU_SS], PR [WJ_MATH_FACTS_FLU_PR]
+- Sentence Writing Fluency: SS [WJ_SENT_WRITE_FLU_SS], PR [WJ_SENT_WRITE_FLU_PR]
+
+[IF_INCLUDE_EXTENDED_BATTERY_START]
+**Extended Battery Subtests:**
+- Reading Recall: SS [WJ_READ_RECALL_SS], PR [WJ_READ_RECALL_PR]
+- Number Matrices: SS [WJ_NUM_MATRICES_SS], PR [WJ_NUM_MATRICES_PR]
+- Editing: SS [WJ_EDITING_SS], PR [WJ_EDITING_PR]
+- Word Reading Fluency: SS [WJ_WORD_READ_FLU_SS], PR [WJ_WORD_READ_FLU_PR]
+- Spelling of Sounds: SS [WJ_SPELL_SOUNDS_SS], PR [WJ_SPELL_SOUNDS_PR]
+- Reading Vocabulary: SS [WJ_READ_VOCAB_SS], PR [WJ_READ_VOCAB_PR]
+- Science: SS [WJ_SCIENCE_SS], PR [WJ_SCIENCE_PR]
+- Social Studies: SS [WJ_SOCIAL_STUDIES_SS], PR [WJ_SOCIAL_STUDIES_PR]
+- Humanities: SS [WJ_HUMANITIES_SS], PR [WJ_HUMANITIES_PR]
+[IF_INCLUDE_EXTENDED_BATTERY_END]
+
+## Narrative Interpretation of Academic Scores
+[NARRATIVE_INTERPRETATION]
+
+## Summary of Findings
+[SUMMARY_OF_FINDINGS]
+
+## Recommendations
+[RECOMMENDATIONS]`
+    },
+    {
+      id: 'cognitive-processing',
+      name: 'Cognitive Processing Report',
+      description: 'Details student cognitive abilities, processing strengths, and weaknesses.',
+      content: `# COGNITIVE PROCESSING REPORT
+## Student Information
+Name: [STUDENT_NAME]
+Date of Birth: [DOB]
+## Overall Scores
+FSIQ: [FSIQ_SCORE_PLACEHOLDER] 
+## Summary
+[SUMMARY_PLACEHOLDER]`
+    },
+    {
+      id: 'speech-language',
+      name: 'Speech & Language Report',
+      description: 'Assesses various aspects of communication including receptive/expressive language, articulation, fluency, and voice.',
+      content: `# SPEECH AND LANGUAGE REPORT
+## Student Information
+Name: [STUDENT_NAME]
+## Articulation
+[ARTICULATION_NOTES_PLACEHOLDER]
+## Language
+[LANGUAGE_NOTES_PLACEHOLDER]
+## Summary
+[SUMMARY_PLACEHOLDER]`
+    }
+  ];
+
+  const toUpperSnakeCase = (camelCase: string): string => {
+    return camelCase
+      .replace(/([A-Z])/g, "_$1")
+      .toUpperCase();
+  };
+
+  const populateTemplate = (templateContent: string, data: FormData): string => {
+    let populatedContent = templateContent;
+
+    // Handle conditional extended battery block
+    const extendedStartTag = "[IF_INCLUDE_EXTENDED_BATTERY_START]";
+    const extendedEndTag = "[IF_INCLUDE_EXTENDED_BATTERY_END]";
+    const startIndex = populatedContent.indexOf(extendedStartTag);
+    const endIndex = populatedContent.indexOf(extendedEndTag);
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      if (data.includeExtendedBattery) {
+        populatedContent = populatedContent.replace(extendedStartTag, "").replace(extendedEndTag, "");
+      } else {
+        populatedContent = populatedContent.substring(0, startIndex) + populatedContent.substring(endIndex + extendedEndTag.length);
+      }
+    }
+    
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key) && key !== 'includeExtendedBattery') {
+        const placeholderKey = toUpperSnakeCase(key);
+        const placeholder = `[${placeholderKey}]`;
+        const value = String(data[key as keyof FormData] ?? '');
+        
+        const regex = new RegExp(`\\[${placeholderKey}\\]`, 'g');
+        populatedContent = populatedContent.replace(regex, value || '[N/A]');
+      }
+    }
+
+    // Replace any remaining unfilled placeholders with [N/A]
+    populatedContent = populatedContent.replace(/\[[A-Z0-9_]+\]/g, '[N/A]');
+    return populatedContent;
+  };
+
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
@@ -662,12 +800,14 @@ const CreateReportPage: React.FC = () => {
                           setCurrentSubStep(5);
                         } else if (currentSubStep < 5) {
                           setCurrentSubStep(prev => prev + 1);
+                        } else if (currentSubStep === 5) {
+                          setCurrentStep(3);
+                          setCurrentSubStep(1);
                         }
                       }}
                       className="btn bg-accent-gold text-black"
-                      disabled={currentSubStep === 5}
                     >
-                      {currentSubStep === 5 ? 'Finish Data Input' : 
+                      {currentSubStep === 5 ? 'Review Report' : 
                        formData.includeExtendedBattery && currentSubStep === 4 ? 'Next: Narrative' :
                        currentSubStep === 3 && !formData.includeExtendedBattery ? 'Next: Narrative' : 'Next'}
                     </button>
@@ -695,6 +835,56 @@ const CreateReportPage: React.FC = () => {
                   <p className="text-text-secondary">Placeholder for displaying parsed template fields and score input for uploaded files.</p>
                 </div>
               )}
+            </div>
+          </>
+        )}
+        
+        {currentStep === 3 && (
+          <>
+            <h2 className="text-xl font-medium mb-4">Step 3: Review & Finalize Report</h2>
+            <p className="text-text-secondary mb-6">
+              Review your populated report template below. You can make final edits or generate the final document.
+            </p>
+            
+            <div className="space-y-6">
+              <div className="p-4 border border-border rounded-md">
+                <h3 className="text-lg font-semibold mb-3 text-gold">Populated Report Preview</h3>
+                {(() => {
+                  if (!selectedTemplateId) {
+                    return <p className="text-red-500">No template selected.</p>;
+                  }
+                  const currentTemplateObject = fullTemplatesData.find(t => t.id === selectedTemplateId);
+                  if (!currentTemplateObject) {
+                    return <p className="text-red-500">Error: Template content not found for ID: {selectedTemplateId}</p>;
+                  }
+                  const reportText = populateTemplate(currentTemplateObject.content, formData);
+                  return (
+                    <pre className="whitespace-pre-wrap text-sm leading-relaxed bg-bg-primary p-4 border border-border rounded-md max-h-[60vh] overflow-y-auto">
+                      {reportText}
+                    </pre>
+                  );
+                })()}
+              </div>
+              
+              <div className="flex justify-between items-center pt-4 border-t border-border">
+                <button 
+                  onClick={() => {
+                    setCurrentStep(2);
+                    setCurrentSubStep(5);
+                  }} 
+                  className="btn border border-border hover:bg-bg-secondary"
+                >
+                  Back to Edit Data
+                </button>
+                <div className="flex gap-3">
+                  <button className="btn border border-border hover:bg-bg-secondary">
+                    Save as Draft
+                  </button>
+                  <button className="btn bg-accent-gold text-black">
+                    Generate Final Report
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         )}
