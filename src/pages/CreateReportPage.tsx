@@ -220,6 +220,97 @@ Name: [STUDENT_NAME]
     return populatedContent;
   };
 
+  const createDocxDocument = (data: FormData, templateId: string, fullTemplateContent: string): Document => {
+    // First populate the template with data
+    const populatedContent = populateTemplate(fullTemplateContent, data);
+    
+    // Split content into lines for processing
+    const lines = populatedContent.split('\n');
+    const paragraphs: Paragraph[] = [];
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines
+      if (!trimmedLine) {
+        paragraphs.push(new Paragraph({ text: '' }));
+        continue;
+      }
+      
+      // Handle different heading levels
+      if (trimmedLine.startsWith('# ')) {
+        paragraphs.push(new Paragraph({
+          text: trimmedLine.substring(2),
+          heading: HeadingLevel.HEADING_1,
+        }));
+      } else if (trimmedLine.startsWith('## ')) {
+        paragraphs.push(new Paragraph({
+          text: trimmedLine.substring(3),
+          heading: HeadingLevel.HEADING_2,
+        }));
+      } else if (trimmedLine.startsWith('### ')) {
+        paragraphs.push(new Paragraph({
+          text: trimmedLine.substring(4),
+          heading: HeadingLevel.HEADING_3,
+        }));
+      } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+        // Handle bold text
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine.substring(2, trimmedLine.length - 2),
+              bold: true,
+            }),
+          ],
+        }));
+      } else if (trimmedLine.startsWith('- ')) {
+        // Handle bullet points
+        paragraphs.push(new Paragraph({
+          text: trimmedLine.substring(2),
+          bullet: {
+            level: 0,
+          },
+        }));
+      } else {
+        // Regular paragraph
+        paragraphs.push(new Paragraph({
+          text: trimmedLine,
+        }));
+      }
+    }
+    
+    return new Document({
+      sections: [{
+        properties: {},
+        children: paragraphs,
+      }],
+    });
+  };
+
+  const downloadDocxFile = async (filename: string, data: FormData, templateId: string) => {
+    try {
+      const currentTemplateObject = fullTemplatesData.find(t => t.id === templateId);
+      if (!currentTemplateObject) {
+        alert("Error: Could not find template to generate download.");
+        return;
+      }
+      
+      console.log('Creating DOCX document...');
+      const doc = createDocxDocument(data, templateId, currentTemplateObject.content);
+      
+      console.log('Converting to blob...');
+      const blob = await Packer.toBlob(doc);
+      
+      console.log('Saving file...');
+      saveAs(blob, filename);
+      
+      console.log('DOCX file download initiated successfully');
+    } catch (error) {
+      console.error('Error generating DOCX file:', error);
+      alert('Error generating DOCX file. Please try again.');
+    }
+  };
+
   const downloadTextFile = (filename: string, text: string) => {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -894,24 +985,18 @@ Name: [STUDENT_NAME]
                     Save as Draft
                   </button>
                   <button 
-                    onClick={() => {
+                    onClick={async () => {
                       if (selectedTemplateId) {
-                        const currentTemplateObject = fullTemplatesData.find(t => t.id === selectedTemplateId);
-                        if (currentTemplateObject) {
-                          const reportText = populateTemplate(currentTemplateObject.content, formData);
-                          const studentNameSanitized = (formData.studentName || 'Student').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-                          const filename = `${studentNameSanitized}_${selectedTemplateId}_Report.txt`;
-                          downloadTextFile(filename, reportText);
-                        } else {
-                          alert("Error: Could not find template to generate download.");
-                        }
+                        const studentNameSanitized = (formData.studentName || 'Student').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                        const filename = `${studentNameSanitized}_${selectedTemplateId}_Report.docx`;
+                        await downloadDocxFile(filename, formData, selectedTemplateId);
                       } else {
                         alert("Error: No template selected for download.");
                       }
                     }}
                     className="btn bg-accent-teal"
                   >
-                    Download Report (.txt)
+                    Download Report (.docx)
                   </button>
                   <button className="btn bg-accent-gold text-black">
                     Generate Final Report
