@@ -22,7 +22,7 @@ const Scheduling: React.FC = () => {
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<CommonAvailableSlot | null>(null);
 
-  // Mock common availability data - in a real app, this would be calculated based on team member availability
+  // Mock common availability data - updated for 2025
   const mockCommonSlots: CommonAvailableSlot[] = [
     { date: "2025-01-20", startTime: "10:00", endTime: "11:30" },
     { date: "2025-01-20", startTime: "14:00", endTime: "15:00" },
@@ -36,6 +36,15 @@ const Scheduling: React.FC = () => {
     { date: "2025-02-03", startTime: "10:00", endTime: "12:00" },
     { date: "2025-02-05", startTime: "13:00", endTime: "15:00" },
     { date: "2025-02-07", startTime: "09:00", endTime: "10:30" },
+    { date: "2025-02-10", startTime: "11:00", endTime: "12:30" },
+    { date: "2025-02-12", startTime: "14:00", endTime: "15:30" },
+    { date: "2025-02-14", startTime: "09:30", endTime: "11:00" },
+    { date: "2025-02-17", startTime: "10:00", endTime: "11:30" },
+    { date: "2025-02-19", startTime: "13:00", endTime: "14:30" },
+    { date: "2025-02-21", startTime: "09:00", endTime: "10:30" },
+    { date: "2025-02-24", startTime: "14:30", endTime: "16:00" },
+    { date: "2025-02-26", startTime: "10:30", endTime: "12:00" },
+    { date: "2025-02-28", startTime: "09:00", endTime: "10:30" },
   ];
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
