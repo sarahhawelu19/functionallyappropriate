@@ -25,7 +25,7 @@ const Scheduling: React.FC = () => {
   const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const [expandedDaySlots, setExpandedDaySlots] = useState<AvailableSlot[]>([]);
 
-  // State for confirmation modal
+  // State for confirmation modal - THESE ARE THE KEY STATE VARIABLES
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmedMeetingDetails, setConfirmedMeetingDetails] = useState<IEPMeeting | null>(null);
 
@@ -66,6 +66,7 @@ const Scheduling: React.FC = () => {
     setIsNewMeetingModalOpen(false);
   };
 
+  // THIS IS THE MODIFIED handleSlotClick FUNCTION
   const handleSlotClick = (slot: AvailableSlot) => {
     if (!currentMeetingProposal) return;
     
@@ -81,7 +82,7 @@ const Scheduling: React.FC = () => {
     // Add to meetings list
     setIepMeetings(prev => [...prev, finalMeeting]);
     
-    // Set confirmation modal details and open it
+    // Set confirmation modal details and open it - KEY CHANGE HERE
     setConfirmedMeetingDetails(finalMeeting);
     setIsConfirmationModalOpen(true);
     
@@ -90,6 +91,7 @@ const Scheduling: React.FC = () => {
     setExpandedDaySlots([]);
   };
 
+  // THIS IS THE CONFIRMATION MODAL CLOSE HANDLER
   const handleConfirmationClose = () => {
     // Reset all states and return to initial view
     setIsConfirmationModalOpen(false);
@@ -101,6 +103,7 @@ const Scheduling: React.FC = () => {
     setViewMode('initial');
   };
 
+  // THIS IS THE SEND INVITATIONS HANDLER WITH SIMULATED EMAIL LOGGING
   const handleSendInvitations = (meeting: IEPMeeting) => {
     console.log("Sending invitations for meeting:", meeting);
     
@@ -254,6 +257,7 @@ const Scheduling: React.FC = () => {
           initialProposal={currentMeetingProposal}
         />
 
+        {/* CONFIRMATION MODAL IN INITIAL VIEW */}
         <MeetingConfirmationModal
           isOpen={isConfirmationModalOpen}
           onClose={handleConfirmationClose}
@@ -528,6 +532,7 @@ const Scheduling: React.FC = () => {
         onSlotSelect={handleSlotClick}
       />
 
+      {/* CONFIRMATION MODAL IN AVAILABILITY VIEW */}
       <MeetingConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleConfirmationClose}
