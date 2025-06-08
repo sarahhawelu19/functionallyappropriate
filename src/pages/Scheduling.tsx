@@ -57,7 +57,7 @@ const Scheduling: React.FC = () => {
       );
       
       setCalculatedAvailability(availability);
-      console.log('Calculated availability:', availability);
+      console.log('Calculated Availability in handleScheduleMeeting:', availability);
     }
     
     setViewMode('availability');
@@ -120,17 +120,15 @@ const Scheduling: React.FC = () => {
 
   // Get slots for current month from calculated availability
   const getMonthSlots = () => {
-    if (!calculatedAvailability) return { commonSlots: [], allSlots: [] };
+    if (!calculatedAvailability) return { commonSlots: [] };
     
     const monthCommonSlots = calculatedAvailability.commonSlots.filter(slot => 
       isSameMonth(new Date(slot.date), currentMonth)
     );
     
-    const monthAllSlots = calculatedAvailability.allSlots.filter(slot => 
-      isSameMonth(new Date(slot.date), currentMonth)
-    );
+    console.log('Slots for current month:', monthCommonSlots);
     
-    return { commonSlots: monthCommonSlots, allSlots: monthAllSlots };
+    return { commonSlots: monthCommonSlots };
   };
 
   // Initial View
@@ -216,7 +214,7 @@ const Scheduling: React.FC = () => {
   }
 
   // Availability View
-  const { commonSlots: monthCommonSlots, allSlots: monthAllSlots } = getMonthSlots();
+  const { commonSlots: monthCommonSlots } = getMonthSlots();
 
   return (
     <div className="animate-fade-in">
@@ -229,7 +227,7 @@ const Scheduling: React.FC = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 className="text-2xl font-medium">Team Availability</h1>
+          <h1 className="text-2xl font-medium">Common Team Availability</h1>
         </div>
       </div>
 
@@ -253,16 +251,15 @@ const Scheduling: React.FC = () => {
                   <span className="font-medium">Team Members:</span> {getTeamMemberNames(currentMeetingProposal.teamMemberIds || [])}
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-4 text-sm">
+              <div className="mt-3 flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-teal rounded"></div>
-                  <span>Common availability (everyone free)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple rounded"></div>
-                  <span>Partial availability (some members free)</span>
+                  <span>Teal slots = All {currentMeetingProposal.teamMemberIds?.length || 0} members available</span>
                 </div>
               </div>
+              <p className="text-text-secondary mt-2 text-sm">
+                Click on any teal time slot below to schedule this meeting.
+              </p>
             </div>
           </div>
         </div>
@@ -307,15 +304,10 @@ const Scheduling: React.FC = () => {
                 meeting.date && format(new Date(meeting.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
               );
               
+              // Only get common slots for this day
               const dayCommonSlots = monthCommonSlots.filter(slot => 
                 format(new Date(slot.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
               );
-              
-              const dayAllSlots = monthAllSlots.filter(slot => 
-                format(new Date(slot.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
-              );
-              
-              const dayPartialSlots = dayAllSlots.filter(slot => !slot.isCommon);
               
               const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
               const isWeekend = getDay(day) === 0 || getDay(day) === 6;
@@ -346,34 +338,29 @@ const Scheduling: React.FC = () => {
                       </div>
                     ))}
                     
-                    {/* Show common available slots (highlighted) */}
-                    {!isPastDate && !isWeekend && dayCommonSlots.slice(0, 3).map((slot, index) => (
+                    {/* Show ONLY common available slots (Teal) */}
+                    {!isPastDate && !isWeekend && dayCommonSlots.slice(0, 4).map((slot, index) => (
                       <button
                         key={`common-${index}`}
                         onClick={() => handleSlotClick(slot)}
                         className="w-full text-xs p-1 bg-teal text-white rounded hover:bg-opacity-90 transition-colors font-medium"
-                        title="Common availability - all team members free"
+                        title={`Common availability - all ${currentMeetingProposal?.teamMemberIds?.length || 0} team members free`}
                       >
                         {formatTime(slot.startTime)}
                       </button>
                     ))}
                     
-                    {/* Show partial available slots */}
-                    {!isPastDate && !isWeekend && dayPartialSlots.slice(0, Math.max(0, 3 - dayCommonSlots.length)).map((slot, index) => (
-                      <button
-                        key={`partial-${index}`}
-                        onClick={() => handleSlotClick(slot)}
-                        className="w-full text-xs p-1 bg-purple text-white rounded hover:bg-opacity-90 transition-colors"
-                        title={`Partial availability - ${slot.availableMembers.length} of ${currentMeetingProposal?.teamMemberIds?.length || 0} members free`}
-                      >
-                        {formatTime(slot.startTime)}
-                      </button>
-                    ))}
+                    {/* Show overflow indicator for common slots only */}
+                    {!isPastDate && !isWeekend && dayCommonSlots.length > 4 && (
+                      <div className="text-xs text-teal text-center font-medium">
+                        +{dayCommonSlots.length - 4} more
+                      </div>
+                    )}
                     
-                    {/* Show overflow indicator */}
-                    {!isPastDate && !isWeekend && (dayCommonSlots.length + dayPartialSlots.length) > 3 && (
-                      <div className="text-xs text-text-secondary text-center">
-                        +{(dayCommonSlots.length + dayPartialSlots.length) - 3} more
+                    {/* Show message when no common slots but day is available */}
+                    {!isPastDate && !isWeekend && dayCommonSlots.length === 0 && dayMeetings.length === 0 && (
+                      <div className="text-xs text-text-secondary text-center py-2">
+                        No common slots
                       </div>
                     )}
                   </div>
@@ -391,7 +378,7 @@ const Scheduling: React.FC = () => {
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="text-teal" size={20} />
-            <h2 className="text-xl font-medium">Availability Summary</h2>
+            <h2 className="text-xl font-medium">Common Availability</h2>
           </div>
           
           <div className="space-y-4 text-sm">
@@ -401,16 +388,12 @@ const Scheduling: React.FC = () => {
                 <h3 className="font-medium mb-2">This Month</h3>
                 <div className="space-y-2 text-text-secondary">
                   <div className="flex justify-between">
-                    <span>Common slots:</span>
+                    <span>Common slots found:</span>
                     <span className="font-medium text-teal">{monthCommonSlots.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Partial slots:</span>
-                    <span className="font-medium text-purple">{monthAllSlots.filter(s => !s.isCommon).length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total slots:</span>
-                    <span className="font-medium">{monthAllSlots.length}</span>
+                    <span>Team members:</span>
+                    <span className="font-medium">{currentMeetingProposal?.teamMemberIds?.length || 0}</span>
                   </div>
                 </div>
               </div>
@@ -420,14 +403,13 @@ const Scheduling: React.FC = () => {
               <h3 className="font-medium mb-2">How to Schedule</h3>
               <ol className="space-y-2 text-text-secondary">
                 <li>1. <span className="text-teal font-medium">Teal slots</span> = Everyone is free</li>
-                <li>2. <span className="text-purple font-medium">Purple slots</span> = Some members free</li>
-                <li>3. Click any slot to select duration</li>
-                <li>4. Confirm to schedule the meeting</li>
+                <li>2. Click any teal slot to select duration</li>
+                <li>3. Confirm to schedule the meeting</li>
               </ol>
             </div>
             
             {/* Show next few common slots */}
-            {monthCommonSlots.length > 0 && (
+            {monthCommonSlots.length > 0 ? (
               <div className="mt-6">
                 <h3 className="font-medium mb-3 flex items-center gap-2">
                   <Eye size={16} />
@@ -454,6 +436,20 @@ const Scheduling: React.FC = () => {
                       </button>
                     ))}
                 </div>
+              </div>
+            ) : (
+              <div className="mt-6 p-4 bg-bg-secondary rounded-md text-center">
+                <Clock className="text-text-secondary mx-auto mb-2" size={24} />
+                <h3 className="font-medium mb-1">No Common Slots</h3>
+                <p className="text-xs text-text-secondary">
+                  No times found when all {currentMeetingProposal?.teamMemberIds?.length || 0} team members are available this month.
+                </p>
+                <button 
+                  onClick={handleBackToInitial}
+                  className="mt-3 text-xs text-teal hover:underline"
+                >
+                  Try different team members
+                </button>
               </div>
             )}
           </div>
