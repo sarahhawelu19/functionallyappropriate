@@ -117,7 +117,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
           />
         </div>
 
-        <div className="mb-4 flex-grow min-h-[400px] flex flex-col"> {/* Ensure editor has space and flex layout */}
+        <div className="mb-4 flex-grow min-h-[400px] flex flex-col quill-editor-wrapper"> 
           <label className="block text-sm font-medium mb-1 text-text-secondary">Template Content:</label>
           <ReactQuill 
             ref={quillRef}
@@ -126,8 +126,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
             onChange={setEditorHtml} 
             modules={modules}
             formats={formats}
-            className="flex-grow bg-white text-gray-900 quill-editor-container" // Quill needs specific height management
-            // The .quill-editor-container and its child .ql-container might need explicit height: 100% or flex-grow
+            className="flex-grow quill-editor-container"
           />
         </div>
         
