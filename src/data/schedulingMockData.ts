@@ -6,6 +6,14 @@ export interface TeamMember {
   name: string;
   role: string; // e.g., 'Case Manager', 'Teacher', 'Speech Therapist', 'Principal (LEA)'
   email: string;
+  // Weekly availability schedule
+  weeklySchedule: {
+    [key in 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday']: {
+      startTime: string; // "HH:MM"
+      endTime: string; // "HH:MM"
+      unavailableSlots?: { startTime: string; endTime: string }[]; // Meetings, lunch, etc.
+    };
+  };
 }
 
 // Blueprints for our students
@@ -93,12 +101,84 @@ export const meetingTypes: MeetingType[] = [
 ];
 
 export const mockTeamMembers: TeamMember[] = [
-  { id: 'tm1', name: 'Sarah Miller (You)', role: 'Case Manager', email: 'sarah.miller@example.com' },
-  { id: 'tm2', name: 'David Chen', role: 'Teacher', email: 'david.chen@example.com' },
-  { id: 'tm3', name: 'Linda Kim', role: 'Speech Therapist', email: 'linda.kim@example.com' },
-  { id: 'tm4', name: 'Robert Davis', role: 'Principal (LEA)', email: 'robert.davis@example.com' },
-  { id: 'tm5', name: 'Emily White', role: 'Occupational Therapist', email: 'emily.white@example.com' },
-  { id: 'tm6', name: 'Michael Brown', role: 'School Psychologist', email: 'michael.brown@example.com' },
+  { 
+    id: 'tm1', 
+    name: 'Sarah Miller (You)', 
+    role: 'Case Manager', 
+    email: 'sarah.miller@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Tuesday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }, { startTime: '14:00', endTime: '15:00' }] },
+      Wednesday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Thursday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Friday: { startTime: '08:00', endTime: '15:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+    }
+  },
+  { 
+    id: 'tm2', 
+    name: 'David Chen', 
+    role: 'Teacher', 
+    email: 'david.chen@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '07:30', endTime: '15:30', unavailableSlots: [{ startTime: '11:30', endTime: '12:30' }, { startTime: '13:30', endTime: '14:30' }] },
+      Tuesday: { startTime: '07:30', endTime: '15:30', unavailableSlots: [{ startTime: '11:30', endTime: '12:30' }] },
+      Wednesday: { startTime: '07:30', endTime: '15:30', unavailableSlots: [{ startTime: '11:30', endTime: '12:30' }] },
+      Thursday: { startTime: '07:30', endTime: '15:30', unavailableSlots: [{ startTime: '11:30', endTime: '12:30' }] },
+      Friday: { startTime: '07:30', endTime: '14:30', unavailableSlots: [{ startTime: '11:30', endTime: '12:30' }] },
+    }
+  },
+  { 
+    id: 'tm3', 
+    name: 'Linda Kim', 
+    role: 'Speech Therapist', 
+    email: 'linda.kim@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '09:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:30', endTime: '13:30' }] },
+      Tuesday: { startTime: '09:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:30', endTime: '13:30' }, { startTime: '15:00', endTime: '16:00' }] },
+      Wednesday: { startTime: '09:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:30', endTime: '13:30' }] },
+      Thursday: { startTime: '09:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:30', endTime: '13:30' }] },
+      Friday: { startTime: '09:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:30', endTime: '13:30' }] },
+    }
+  },
+  { 
+    id: 'tm4', 
+    name: 'Robert Davis', 
+    role: 'Principal (LEA)', 
+    email: 'robert.davis@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '08:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }, { startTime: '15:00', endTime: '16:00' }] },
+      Tuesday: { startTime: '08:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Wednesday: { startTime: '08:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Thursday: { startTime: '08:00', endTime: '17:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }, { startTime: '14:00', endTime: '15:00' }] },
+      Friday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+    }
+  },
+  { 
+    id: 'tm5', 
+    name: 'Emily White', 
+    role: 'Occupational Therapist', 
+    email: 'emily.white@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '08:30', endTime: '16:30', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Tuesday: { startTime: '08:30', endTime: '16:30', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Wednesday: { startTime: '08:30', endTime: '16:30', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }, { startTime: '14:30', endTime: '15:30' }] },
+      Thursday: { startTime: '08:30', endTime: '16:30', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+      Friday: { startTime: '08:30', endTime: '15:30', unavailableSlots: [{ startTime: '12:00', endTime: '13:00' }] },
+    }
+  },
+  { 
+    id: 'tm6', 
+    name: 'Michael Brown', 
+    role: 'School Psychologist', 
+    email: 'michael.brown@example.com',
+    weeklySchedule: {
+      Monday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '11:00', endTime: '12:00' }, { startTime: '13:00', endTime: '14:00' }] },
+      Tuesday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '11:00', endTime: '12:00' }] },
+      Wednesday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '11:00', endTime: '12:00' }] },
+      Thursday: { startTime: '08:00', endTime: '16:00', unavailableSlots: [{ startTime: '11:00', endTime: '12:00' }] },
+      Friday: { startTime: '08:00', endTime: '15:00', unavailableSlots: [{ startTime: '11:00', endTime: '12:00' }] },
+    }
+  },
 ];
 
 export const mockStudents: StudentProfile[] = [

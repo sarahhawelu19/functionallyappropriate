@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns';
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft, Eye } from 'lucide-react';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DurationSelectionModal from '../components/scheduling/DurationSelectionModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
+import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 
 type ViewMode = 'initial' | 'availability';
 
@@ -21,31 +22,11 @@ const Scheduling: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<CommonAvailableSlot | null>(null);
-
-  // Mock common availability data - updated for 2025
-  const mockCommonSlots: CommonAvailableSlot[] = [
-    { date: "2025-01-20", startTime: "10:00", endTime: "11:30" },
-    { date: "2025-01-20", startTime: "14:00", endTime: "15:00" },
-    { date: "2025-01-22", startTime: "09:00", endTime: "10:30" },
-    { date: "2025-01-22", startTime: "13:30", endTime: "15:30" },
-    { date: "2025-01-24", startTime: "10:30", endTime: "12:00" },
-    { date: "2025-01-27", startTime: "09:00", endTime: "11:00" },
-    { date: "2025-01-27", startTime: "14:30", endTime: "16:00" },
-    { date: "2025-01-29", startTime: "10:00", endTime: "11:00" },
-    { date: "2025-01-31", startTime: "09:30", endTime: "11:30" },
-    { date: "2025-02-03", startTime: "10:00", endTime: "12:00" },
-    { date: "2025-02-05", startTime: "13:00", endTime: "15:00" },
-    { date: "2025-02-07", startTime: "09:00", endTime: "10:30" },
-    { date: "2025-02-10", startTime: "11:00", endTime: "12:30" },
-    { date: "2025-02-12", startTime: "14:00", endTime: "15:30" },
-    { date: "2025-02-14", startTime: "09:30", endTime: "11:00" },
-    { date: "2025-02-17", startTime: "10:00", endTime: "11:30" },
-    { date: "2025-02-19", startTime: "13:00", endTime: "14:30" },
-    { date: "2025-02-21", startTime: "09:00", endTime: "10:30" },
-    { date: "2025-02-24", startTime: "14:30", endTime: "16:00" },
-    { date: "2025-02-26", startTime: "10:30", endTime: "12:00" },
-    { date: "2025-02-28", startTime: "09:00", endTime: "10:30" },
-  ];
+  const [calculatedAvailability, setCalculatedAvailability] = useState<{
+    individualAvailability: any[];
+    commonSlots: AvailableSlot[];
+    allSlots: AvailableSlot[];
+  } | null>(null);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -60,20 +41,36 @@ const Scheduling: React.FC = () => {
     meeting.date && isSameMonth(new Date(meeting.date), currentMonth)
   );
 
-  // Filter common slots for the current month
-  const monthCommonSlots = mockCommonSlots.filter(slot => 
-    isSameMonth(new Date(slot.date), currentMonth)
-  );
-
   const handleScheduleMeeting = (meetingDetails: Partial<IEPMeeting>) => {
     console.log('Meeting proposal received:', meetingDetails);
     setCurrentMeetingProposal(meetingDetails);
+    
+    // Calculate availability for selected team members
+    if (meetingDetails.teamMemberIds && meetingDetails.teamMemberIds.length > 0) {
+      const startDate = new Date();
+      const endDate = addDays(startDate, 90); // Calculate 3 months ahead
+      
+      const availability = calculateTeamAvailability(
+        meetingDetails.teamMemberIds,
+        startDate,
+        endDate
+      );
+      
+      setCalculatedAvailability(availability);
+      console.log('Calculated availability:', availability);
+    }
+    
     setViewMode('availability');
     setIsNewMeetingModalOpen(false);
   };
 
-  const handleSlotClick = (slot: CommonAvailableSlot) => {
-    setSelectedSlot(slot);
+  const handleSlotClick = (slot: AvailableSlot) => {
+    const commonSlot: CommonAvailableSlot = {
+      date: slot.date,
+      startTime: slot.startTime,
+      endTime: slot.endTime
+    };
+    setSelectedSlot(commonSlot);
     setIsDurationModalOpen(true);
   };
 
@@ -95,29 +92,16 @@ const Scheduling: React.FC = () => {
     // Clear states after successful scheduling
     setCurrentMeetingProposal(null);
     setSelectedSlot(null);
+    setCalculatedAvailability(null);
     setIsDurationModalOpen(false);
     setViewMode('initial'); // Return to initial view after scheduling
   };
 
   const handleBackToInitial = () => {
     setViewMode('initial');
+    setCurrentMeetingProposal(null);
+    setCalculatedAvailability(null);
     setIsNewMeetingModalOpen(true);
-  };
-
-  const handleDemoAvailability = () => {
-    // Create a demo meeting proposal
-    const demoProposal: Partial<IEPMeeting> = {
-      id: 'demo-' + Date.now(),
-      studentId: 's1',
-      studentName: 'Demo Student',
-      meetingType: 'Annual IEP',
-      teamMemberIds: ['tm1', 'tm2', 'tm3'],
-      status: 'pending_scheduling',
-      createdByUserId: 'currentUserPlaceholderId',
-    };
-    
-    setCurrentMeetingProposal(demoProposal);
-    setViewMode('availability');
   };
 
   const getTeamMemberNames = (teamMemberIds: string[]) => {
@@ -134,18 +118,27 @@ const Scheduling: React.FC = () => {
     return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
   };
 
+  // Get slots for current month from calculated availability
+  const getMonthSlots = () => {
+    if (!calculatedAvailability) return { commonSlots: [], allSlots: [] };
+    
+    const monthCommonSlots = calculatedAvailability.commonSlots.filter(slot => 
+      isSameMonth(new Date(slot.date), currentMonth)
+    );
+    
+    const monthAllSlots = calculatedAvailability.allSlots.filter(slot => 
+      isSameMonth(new Date(slot.date), currentMonth)
+    );
+    
+    return { commonSlots: monthCommonSlots, allSlots: monthAllSlots };
+  };
+
   // Initial View
   if (viewMode === 'initial') {
     return (
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-medium">Scheduling</h1>
-          <button 
-            className="btn bg-accent-teal text-sm px-4 py-2"
-            onClick={handleDemoAvailability}
-          >
-            Demo: View Availability
-          </button>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -155,8 +148,8 @@ const Scheduling: React.FC = () => {
               <CalendarIcon className="text-teal mx-auto mb-4" size={64} />
               <h2 className="text-2xl font-medium mb-4">Schedule IEP Meetings</h2>
               <p className="text-text-secondary mb-8 max-w-md mx-auto">
-                Get started by scheduling a new IEP meeting. We'll help you find common availability 
-                among all required team members.
+                Select your team members and we'll calculate everyone's availability, 
+                highlighting common free times for easy scheduling.
               </p>
               
               <button 
@@ -223,6 +216,8 @@ const Scheduling: React.FC = () => {
   }
 
   // Availability View
+  const { commonSlots: monthCommonSlots, allSlots: monthAllSlots } = getMonthSlots();
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -234,7 +229,7 @@ const Scheduling: React.FC = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 className="text-2xl font-medium">Find Common Availability</h1>
+          <h1 className="text-2xl font-medium">Team Availability</h1>
         </div>
       </div>
 
@@ -258,9 +253,16 @@ const Scheduling: React.FC = () => {
                   <span className="font-medium">Team Members:</span> {getTeamMemberNames(currentMeetingProposal.teamMemberIds || [])}
                 </div>
               </div>
-              <p className="text-text-secondary mt-2 text-sm">
-                Click on any available time slot below to schedule this meeting.
-              </p>
+              <div className="mt-3 flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-teal rounded"></div>
+                  <span>Common availability (everyone free)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-purple rounded"></div>
+                  <span>Partial availability (some members free)</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -297,7 +299,7 @@ const Scheduling: React.FC = () => {
             ))}
             
             {Array.from({ length: getDay(monthStart) }).map((_, index) => (
-              <div key={`empty-start-${index}`} className="h-24 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
+              <div key={`empty-start-${index}`} className="h-32 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
             ))}
             
             {monthDays.map(day => {
@@ -305,19 +307,26 @@ const Scheduling: React.FC = () => {
                 meeting.date && format(new Date(meeting.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
               );
               
-              const daySlots = monthCommonSlots.filter(slot => 
+              const dayCommonSlots = monthCommonSlots.filter(slot => 
                 format(new Date(slot.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
               );
               
+              const dayAllSlots = monthAllSlots.filter(slot => 
+                format(new Date(slot.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
+              );
+              
+              const dayPartialSlots = dayAllSlots.filter(slot => !slot.isCommon);
+              
               const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
+              const isWeekend = getDay(day) === 0 || getDay(day) === 6;
               
               return (
                 <div 
                   key={day.toString()} 
-                  className={`h-24 p-1 border border-border rounded-md overflow-hidden transition-all ${
-                    isPastDate 
+                  className={`h-32 p-1 border border-border rounded-md overflow-hidden transition-all ${
+                    isPastDate || isWeekend
                       ? 'bg-bg-secondary bg-opacity-50' 
-                      : daySlots.length > 0 
+                      : dayCommonSlots.length > 0 
                         ? 'hover:border-teal' 
                         : ''
                   } ${
@@ -337,23 +346,43 @@ const Scheduling: React.FC = () => {
                       </div>
                     ))}
                     
-                    {/* Show available slots */}
-                    {!isPastDate && daySlots.map((slot, index) => (
+                    {/* Show common available slots (highlighted) */}
+                    {!isPastDate && !isWeekend && dayCommonSlots.slice(0, 3).map((slot, index) => (
                       <button
-                        key={index}
+                        key={`common-${index}`}
                         onClick={() => handleSlotClick(slot)}
-                        className="w-full text-xs p-1 bg-teal text-white rounded hover:bg-opacity-90 transition-colors"
+                        className="w-full text-xs p-1 bg-teal text-white rounded hover:bg-opacity-90 transition-colors font-medium"
+                        title="Common availability - all team members free"
                       >
-                        {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                        {formatTime(slot.startTime)}
                       </button>
                     ))}
+                    
+                    {/* Show partial available slots */}
+                    {!isPastDate && !isWeekend && dayPartialSlots.slice(0, Math.max(0, 3 - dayCommonSlots.length)).map((slot, index) => (
+                      <button
+                        key={`partial-${index}`}
+                        onClick={() => handleSlotClick(slot)}
+                        className="w-full text-xs p-1 bg-purple text-white rounded hover:bg-opacity-90 transition-colors"
+                        title={`Partial availability - ${slot.availableMembers.length} of ${currentMeetingProposal?.teamMemberIds?.length || 0} members free`}
+                      >
+                        {formatTime(slot.startTime)}
+                      </button>
+                    ))}
+                    
+                    {/* Show overflow indicator */}
+                    {!isPastDate && !isWeekend && (dayCommonSlots.length + dayPartialSlots.length) > 3 && (
+                      <div className="text-xs text-text-secondary text-center">
+                        +{(dayCommonSlots.length + dayPartialSlots.length) - 3} more
+                      </div>
+                    )}
                   </div>
                 </div>
               );
             })}
             
             {Array.from({ length: 6 - getDay(monthEnd) }).map((_, index) => (
-              <div key={`empty-end-${index}`} className="h-24 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
+              <div key={`empty-end-${index}`} className="h-32 p-2 border border-border bg-bg-secondary bg-opacity-30 rounded-md" />
             ))}
           </div>
         </div>
@@ -362,49 +391,53 @@ const Scheduling: React.FC = () => {
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="text-teal" size={20} />
-            <h2 className="text-xl font-medium">Available Times</h2>
+            <h2 className="text-xl font-medium">Availability Summary</h2>
           </div>
           
           <div className="space-y-4 text-sm">
+            {/* Statistics */}
+            {calculatedAvailability && (
+              <div className="p-3 bg-bg-secondary rounded-md">
+                <h3 className="font-medium mb-2">This Month</h3>
+                <div className="space-y-2 text-text-secondary">
+                  <div className="flex justify-between">
+                    <span>Common slots:</span>
+                    <span className="font-medium text-teal">{monthCommonSlots.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Partial slots:</span>
+                    <span className="font-medium text-purple">{monthAllSlots.filter(s => !s.isCommon).length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total slots:</span>
+                    <span className="font-medium">{monthAllSlots.length}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="p-3 bg-bg-secondary rounded-md">
               <h3 className="font-medium mb-2">How to Schedule</h3>
               <ol className="space-y-2 text-text-secondary">
-                <li>1. Click on any teal time slot in the calendar</li>
-                <li>2. Select your preferred meeting duration</li>
-                <li>3. Confirm to schedule the meeting</li>
+                <li>1. <span className="text-teal font-medium">Teal slots</span> = Everyone is free</li>
+                <li>2. <span className="text-purple font-medium">Purple slots</span> = Some members free</li>
+                <li>3. Click any slot to select duration</li>
+                <li>4. Confirm to schedule the meeting</li>
               </ol>
             </div>
             
-            <div className="p-3 border border-border rounded-md">
-              <h3 className="font-medium mb-2">Legend</h3>
-              <div className="space-y-2 text-text-secondary">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-teal rounded"></div>
-                  <span>Available time slots</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                  <span>Existing meetings</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-bg-secondary rounded"></div>
-                  <span>Past dates (unavailable)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-teal bg-opacity-10 border border-teal rounded"></div>
-                  <span>Today</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Show available slots for current month */}
+            {/* Show next few common slots */}
             {monthCommonSlots.length > 0 && (
               <div className="mt-6">
-                <h3 className="font-medium mb-3">This Month's Available Slots</h3>
+                <h3 className="font-medium mb-3 flex items-center gap-2">
+                  <Eye size={16} />
+                  Next Common Slots
+                </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {monthCommonSlots
                     .filter(slot => new Date(slot.date) >= new Date(new Date().setHours(0, 0, 0, 0)))
                     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .slice(0, 8)
                     .map((slot, index) => (
                       <button
                         key={index}
@@ -414,6 +447,9 @@ const Scheduling: React.FC = () => {
                         <div className="font-medium">{format(new Date(slot.date), 'MMM d')}</div>
                         <div className="text-text-secondary">
                           {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                        </div>
+                        <div className="text-teal text-[10px]">
+                          All {currentMeetingProposal?.teamMemberIds?.length || 0} members available
                         </div>
                       </button>
                     ))}
