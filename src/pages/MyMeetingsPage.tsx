@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Clock, User, Check, X, MessageSquare, AlertCircle, CheckCircle, XCircle, Clock as ClockIcon, Edit, Trash2, Crown } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { useMeetings } from '../context/MeetingsContext';
 import { mockTeamMembers, MeetingParticipantRSVP } from '../data/schedulingMockData';
 
@@ -9,7 +10,8 @@ const MyMeetingsPage: React.FC = () => {
   const currentUserId = 'tm1'; // Sarah Miller (Case Manager) - change to 'tm2', 'tm3', etc. to test different users
   const currentUser = mockTeamMembers.find(member => member.id === currentUserId);
   
-  const { iepMeetings, updateMeetingRSVP, setIepMeetings } = useMeetings();
+  const navigate = useNavigate();
+  const { iepMeetings, updateMeetingRSVP, setIepMeetings, setEditingMeetingId } = useMeetings();
   const [declineNote, setDeclineNote] = useState('');
   const [showDeclineModal, setShowDeclineModal] = useState<string | null>(null);
 
@@ -83,6 +85,15 @@ const MyMeetingsPage: React.FC = () => {
   const handleProposeNewTime = (meetingId: string) => {
     // For now, just mark as "Proposed New Time" - functionality to be added later
     updateMeetingRSVP(meetingId, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+  };
+
+  // NEW: Handle Edit Meeting - Navigate to Scheduling page with meeting details
+  const handleEditMeeting = (meeting: any) => {
+    // Set the meeting ID being edited in context
+    setEditingMeetingId(meeting.id);
+    
+    // Navigate to scheduling page - the Scheduling component will detect edit mode
+    navigate('/scheduling');
   };
 
   const handleCancelMeeting = (meetingId: string) => {
@@ -285,7 +296,7 @@ const MyMeetingsPage: React.FC = () => {
                           
                           <div className="space-y-2">
                             <button
-                              onClick={() => {/* Placeholder for edit functionality */}}
+                              onClick={() => handleEditMeeting(meeting)}
                               className="w-full btn border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center justify-center gap-2"
                             >
                               <Edit size={16} />

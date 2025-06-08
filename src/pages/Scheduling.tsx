@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft, Eye } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
@@ -13,7 +13,7 @@ type ViewMode = 'initial' | 'availability';
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const { iepMeetings, addMeeting } = useMeetings(); // Use context instead of local state
+  const { iepMeetings, addMeeting, updateMeeting, editingMeetingId, setEditingMeetingId } = useMeetings(); // Use context
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [calculatedAvailability, setCalculatedAvailability] = useState<{
@@ -26,9 +26,23 @@ const Scheduling: React.FC = () => {
   const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const [expandedDaySlots, setExpandedDaySlots] = useState<AvailableSlot[]>([]);
 
-  // State for confirmation modal - THESE ARE THE KEY STATE VARIABLES
+  // State for confirmation modal
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmedMeetingDetails, setConfirmedMeetingDetails] = useState<IEPMeeting | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false); // NEW: Track if we're editing
+
+  // NEW: Effect to handle edit mode when component loads
+  useEffect(() => {
+    if (editingMeetingId) {
+      const meetingToEdit = iepMeetings.find(meeting => meeting.id === editingMeetingId);
+      if (meetingToEdit) {
+        // Pre-fill the modal with existing meeting details
+        setCurrentMeetingProposal(meetingToEdit);
+        setIsEditMode(true);
+        setIsNewMeetingModalOpen(true);
+      }
+    }
+  }, [editingMeetingId, iepMeetings]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -67,11 +81,10 @@ const Scheduling: React.FC = () => {
     setIsNewMeetingModalOpen(false);
   };
 
-  // THIS IS THE MODIFIED handleSlotClick FUNCTION
   const handleSlotClick = (slot: AvailableSlot) => {
     if (!currentMeetingProposal) return;
     
-    // Create final meeting object directly with RSVP participants initialized
+    // Create final meeting object with RSVP participants initialized
     const finalMeeting: IEPMeeting = {
       ...currentMeetingProposal,
       date: slot.date,
@@ -85,10 +98,16 @@ const Scheduling: React.FC = () => {
       })),
     } as IEPMeeting;
     
-    // Add to meetings list using context
-    addMeeting(finalMeeting);
+    // NEW: Check if we're editing or creating
+    if (isEditMode && editingMeetingId) {
+      // Update existing meeting
+      updateMeeting(finalMeeting);
+    } else {
+      // Add new meeting
+      addMeeting(finalMeeting);
+    }
     
-    // Set confirmation modal details and open it - KEY CHANGE HERE
+    // Set confirmation modal details and open it
     setConfirmedMeetingDetails(finalMeeting);
     setIsConfirmationModalOpen(true);
     
@@ -97,7 +116,6 @@ const Scheduling: React.FC = () => {
     setExpandedDaySlots([]);
   };
 
-  // THIS IS THE CONFIRMATION MODAL CLOSE HANDLER
   const handleConfirmationClose = () => {
     // Reset all states and return to initial view
     setIsConfirmationModalOpen(false);
@@ -107,11 +125,17 @@ const Scheduling: React.FC = () => {
     setExpandedDay(null);
     setExpandedDaySlots([]);
     setViewMode('initial');
+    
+    // NEW: Clear edit mode states
+    setIsEditMode(false);
+    setEditingMeetingId(null);
   };
 
-  // THIS IS THE SEND INVITATIONS HANDLER WITH SIMULATED EMAIL LOGGING
   const handleSendInvitations = (meeting: IEPMeeting) => {
     console.log("Sending invitations for meeting:", meeting);
+    
+    // NEW: Different message for edit vs new
+    const actionType = isEditMode ? "updated" : "new";
     
     // Simulate sending emails to team members
     meeting.teamMemberIds?.forEach(memberId => {
@@ -131,11 +155,19 @@ const Scheduling: React.FC = () => {
           return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
         })() : '';
         
-        console.log(`Simulated email to ${teamMember.name} <${teamMember.email}>: You are invited to an IEP meeting for ${meeting.studentName} (${meeting.meetingType}) on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please RSVP.`);
+        const emailSubject = isEditMode 
+          ? `UPDATED: IEP Meeting for ${meeting.studentName}` 
+          : `IEP Meeting Invitation - ${meeting.studentName}`;
+        
+        const emailBody = isEditMode
+          ? `The IEP meeting for ${meeting.studentName} has been updated. New details: ${meeting.meetingType} on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please confirm your availability.`
+          : `You are invited to an IEP meeting for ${meeting.studentName} (${meeting.meetingType}) on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please RSVP.`;
+        
+        console.log(`Simulated email to ${teamMember.name} <${teamMember.email}>: ${emailSubject} - ${emailBody}`);
       }
     });
     
-    console.log("All invitations sent successfully!");
+    console.log(`All ${actionType} meeting invitations sent successfully!`);
   };
 
   const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
@@ -151,7 +183,23 @@ const Scheduling: React.FC = () => {
     setCalculatedAvailability(null);
     setExpandedDay(null);
     setExpandedDaySlots([]);
-    setIsNewMeetingModalOpen(true);
+    
+    // NEW: Clear edit mode but keep modal open for editing
+    if (isEditMode) {
+      setIsNewMeetingModalOpen(true);
+    } else {
+      setIsNewMeetingModalOpen(true);
+    }
+  };
+
+  // NEW: Handle modal close - clear edit state if needed
+  const handleModalClose = () => {
+    setIsNewMeetingModalOpen(false);
+    if (isEditMode) {
+      setIsEditMode(false);
+      setEditingMeetingId(null);
+      setCurrentMeetingProposal(null);
+    }
   };
 
   const getTeamMemberNames = (teamMemberIds: string[]) => {
@@ -186,7 +234,9 @@ const Scheduling: React.FC = () => {
     return (
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-medium">Scheduling</h1>
+          <h1 className="text-2xl font-medium">
+            {isEditMode ? 'Edit IEP Meeting' : 'Scheduling'}
+          </h1>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -194,10 +244,14 @@ const Scheduling: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="card text-center py-12">
               <CalendarIcon className="text-teal mx-auto mb-4" size={64} />
-              <h2 className="text-2xl font-medium mb-4">Schedule IEP Meetings</h2>
+              <h2 className="text-2xl font-medium mb-4">
+                {isEditMode ? 'Edit IEP Meeting' : 'Schedule IEP Meetings'}
+              </h2>
               <p className="text-text-secondary mb-8 max-w-md mx-auto">
-                Select your team members, meeting duration, and we'll show you exactly when 
-                everyone is available for that specific time block.
+                {isEditMode 
+                  ? 'Modify the meeting details below. Team members will be re-notified of any changes.'
+                  : 'Select your team members, meeting duration, and we\'ll show you exactly when everyone is available for that specific time block.'
+                }
               </p>
               
               <button 
@@ -206,7 +260,7 @@ const Scheduling: React.FC = () => {
               >
                 <span className="flex items-center gap-2">
                   <Plus size={24} />
-                  Schedule New IEP Meeting
+                  {isEditMode ? 'Continue Editing Meeting' : 'Schedule New IEP Meeting'}
                 </span>
               </button>
             </div>
@@ -258,12 +312,11 @@ const Scheduling: React.FC = () => {
 
         <NewIEPMeetingModal
           isOpen={isNewMeetingModalOpen}
-          onClose={() => setIsNewMeetingModalOpen(false)}
+          onClose={handleModalClose}
           onScheduleMeeting={handleScheduleMeeting}
           initialProposal={currentMeetingProposal}
         />
 
-        {/* CONFIRMATION MODAL IN INITIAL VIEW */}
         <MeetingConfirmationModal
           isOpen={isConfirmationModalOpen}
           onClose={handleConfirmationClose}
@@ -288,19 +341,22 @@ const Scheduling: React.FC = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 className="text-2xl font-medium">Available {currentMeetingProposal?.durationMinutes}-Minute Slots</h1>
+          <h1 className="text-2xl font-medium">
+            {isEditMode ? 'Edit Meeting - ' : ''}Available {currentMeetingProposal?.durationMinutes}-Minute Slots
+          </h1>
         </div>
       </div>
 
       {/* Meeting Proposal Summary */}
       {currentMeetingProposal && (
-        <div className="card mb-6 bg-teal bg-opacity-5 border-teal">
+        <div className={`card mb-6 ${isEditMode ? 'bg-gold bg-opacity-5 border-gold' : 'bg-teal bg-opacity-5 border-teal'}`}>
           <div className="flex items-start gap-4">
-            <div className="p-2 bg-teal rounded-full text-white">
+            <div className={`p-2 rounded-full text-white ${isEditMode ? 'bg-gold' : 'bg-teal'}`}>
               <Users size={20} />
             </div>
             <div className="flex-1">
               <h3 className="font-medium text-lg mb-2">
+                {isEditMode && <span className="text-gold">[EDITING] </span>}
                 {currentMeetingProposal.meetingType} for {currentMeetingProposal.studentName}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -317,12 +373,13 @@ const Scheduling: React.FC = () => {
               </div>
               <div className="mt-3 flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-teal rounded"></div>
-                  <span>Teal slots = {currentMeetingProposal.durationMinutes}-minute blocks where all {currentMeetingProposal.teamMemberIds?.length || 0} members are available</span>
+                  <div className={`w-4 h-4 rounded ${isEditMode ? 'bg-gold' : 'bg-teal'}`}></div>
+                  <span>{isEditMode ? 'Gold' : 'Teal'} slots = {currentMeetingProposal.durationMinutes}-minute blocks where all {currentMeetingProposal.teamMemberIds?.length || 0} members are available</span>
                 </div>
               </div>
               <p className="text-text-secondary mt-2 text-sm">
-                Click on any day with teal availability to see all {currentMeetingProposal.durationMinutes}-minute time slots for that day.
+                {isEditMode && <span className="text-gold font-medium">Editing Mode: </span>}
+                Click on any day with {isEditMode ? 'gold' : 'teal'} availability to see all {currentMeetingProposal.durationMinutes}-minute time slots for that day.
               </p>
             </div>
           </div>
@@ -376,6 +433,7 @@ const Scheduling: React.FC = () => {
               const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
               const isWeekend = getDay(day) === 0 || getDay(day) === 6;
               const hasCommonSlots = dayCommonSlots.length > 0;
+              const slotColor = isEditMode ? 'gold' : 'teal';
               
               return (
                 <div 
@@ -384,14 +442,14 @@ const Scheduling: React.FC = () => {
                     isPastDate || isWeekend
                       ? 'bg-bg-secondary bg-opacity-50' 
                       : hasCommonSlots
-                        ? 'hover:border-teal cursor-pointer hover:bg-teal hover:bg-opacity-5' 
+                        ? `hover:border-${slotColor} cursor-pointer hover:bg-${slotColor} hover:bg-opacity-5` 
                         : ''
                   } ${
-                    isToday(day) ? 'bg-teal bg-opacity-10 border-teal' : ''
+                    isToday(day) ? `bg-${slotColor} bg-opacity-10 border-${slotColor}` : ''
                   }`}
                   onClick={() => !isPastDate && !isWeekend && hasCommonSlots && handleDayClick(day, dayCommonSlots)}
                 >
-                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : hasCommonSlots ? 'text-teal font-bold' : ''}`}>
+                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : hasCommonSlots ? `text-${slotColor} font-bold` : ''}`}>
                     {format(day, 'd')}
                   </div>
                   
@@ -407,10 +465,10 @@ const Scheduling: React.FC = () => {
                     {/* Show common slots indicator */}
                     {!isPastDate && !isWeekend && hasCommonSlots && (
                       <div className="text-center">
-                        <div className="text-xs text-teal font-bold bg-teal bg-opacity-10 rounded px-1 py-0.5">
+                        <div className={`text-xs text-${slotColor} font-bold bg-${slotColor} bg-opacity-10 rounded px-1 py-0.5`}>
                           {dayCommonSlots.length} slot{dayCommonSlots.length !== 1 ? 's' : ''}
                         </div>
-                        <div className="text-[10px] text-teal mt-1">
+                        <div className={`text-[10px] text-${slotColor} mt-1`}>
                           {currentMeetingProposal?.durationMinutes}min blocks
                         </div>
                       </div>
@@ -436,11 +494,21 @@ const Scheduling: React.FC = () => {
         {/* Sidebar */}
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="text-teal" size={20} />
+            <Clock className={isEditMode ? 'text-gold' : 'text-teal'} size={20} />
             <h2 className="text-xl font-medium">{currentMeetingProposal?.durationMinutes}-Min Availability</h2>
           </div>
           
           <div className="space-y-4 text-sm">
+            {/* Edit Mode Indicator */}
+            {isEditMode && (
+              <div className="p-3 bg-gold bg-opacity-10 border border-gold rounded-md">
+                <h3 className="font-medium text-gold mb-1">Edit Mode Active</h3>
+                <p className="text-xs text-text-secondary">
+                  You're editing an existing meeting. Selecting a new time will update the meeting and reset all participant RSVPs.
+                </p>
+              </div>
+            )}
+            
             {/* Statistics */}
             {calculatedAvailability && (
               <div className="p-3 bg-bg-secondary rounded-md">
@@ -448,7 +516,7 @@ const Scheduling: React.FC = () => {
                 <div className="space-y-2 text-text-secondary">
                   <div className="flex justify-between">
                     <span>{currentMeetingProposal?.durationMinutes}-min slots found:</span>
-                    <span className="font-medium text-teal">{monthCommonSlots.length}</span>
+                    <span className={`font-medium ${isEditMode ? 'text-gold' : 'text-teal'}`}>{monthCommonSlots.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Team members:</span>
@@ -463,11 +531,11 @@ const Scheduling: React.FC = () => {
             )}
             
             <div className="p-3 bg-bg-secondary rounded-md">
-              <h3 className="font-medium mb-2">How to Schedule</h3>
+              <h3 className="font-medium mb-2">How to {isEditMode ? 'Update' : 'Schedule'}</h3>
               <ol className="space-y-2 text-text-secondary">
-                <li>1. <span className="text-teal font-medium">Click any day</span> with teal availability</li>
-                <li>2. <span className="text-teal font-medium">Select a {currentMeetingProposal?.durationMinutes}-minute slot</span> from the list</li>
-                <li>3. Meeting is immediately scheduled!</li>
+                <li>1. <span className={`${isEditMode ? 'text-gold' : 'text-teal'} font-medium`}>Click any day</span> with {isEditMode ? 'gold' : 'teal'} availability</li>
+                <li>2. <span className={`${isEditMode ? 'text-gold' : 'text-teal'} font-medium`}>Select a {currentMeetingProposal?.durationMinutes}-minute slot</span> from the list</li>
+                <li>3. Meeting is {isEditMode ? 'updated' : 'scheduled'} immediately!</li>
               </ol>
             </div>
             
@@ -487,13 +555,13 @@ const Scheduling: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => handleSlotClick(slot)}
-                        className="w-full text-left text-xs p-2 border border-teal rounded hover:bg-teal hover:bg-opacity-10 transition-colors"
+                        className={`w-full text-left text-xs p-2 border border-${isEditMode ? 'gold' : 'teal'} rounded hover:bg-${isEditMode ? 'gold' : 'teal'} hover:bg-opacity-10 transition-colors`}
                       >
                         <div className="font-medium">{format(new Date(slot.date), 'MMM d')}</div>
                         <div className="text-text-secondary">
                           {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                         </div>
-                        <div className="text-teal text-[10px]">
+                        <div className={`text-${isEditMode ? 'gold' : 'teal'} text-[10px]`}>
                           {currentMeetingProposal?.durationMinutes}-min block • All {currentMeetingProposal?.teamMemberIds?.length || 0} members available
                         </div>
                       </button>
@@ -509,7 +577,7 @@ const Scheduling: React.FC = () => {
                 </p>
                 <button 
                   onClick={handleBackToInitial}
-                  className="mt-3 text-xs text-teal hover:underline"
+                  className={`mt-3 text-xs ${isEditMode ? 'text-gold' : 'text-teal'} hover:underline`}
                 >
                   Try different duration or team members
                 </button>
@@ -522,7 +590,7 @@ const Scheduling: React.FC = () => {
       {/* Modals */}
       <NewIEPMeetingModal
         isOpen={isNewMeetingModalOpen}
-        onClose={() => setIsNewMeetingModalOpen(false)}
+        onClose={handleModalClose}
         onScheduleMeeting={handleScheduleMeeting}
         initialProposal={currentMeetingProposal}
       />
@@ -538,7 +606,6 @@ const Scheduling: React.FC = () => {
         onSlotSelect={handleSlotClick}
       />
 
-      {/* CONFIRMATION MODAL IN AVAILABILITY VIEW */}
       <MeetingConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleConfirmationClose}

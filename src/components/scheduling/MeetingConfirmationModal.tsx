@@ -8,6 +8,7 @@ interface MeetingConfirmationModalProps {
   onClose: () => void;
   onSendInvitations: (meeting: IEPMeeting) => void;
   meeting: IEPMeeting | null;
+  isEditMode?: boolean; // NEW: Optional prop to indicate edit mode
 }
 
 const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
@@ -15,6 +16,7 @@ const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
   onClose,
   onSendInvitations,
   meeting,
+  isEditMode = false, // NEW: Default to false for backward compatibility
 }) => {
   const formatTime = (timeString: string): string => {
     const [hour, minute] = timeString.split(':').map(Number);
@@ -59,10 +61,12 @@ const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
         <div className="relative w-full max-w-2xl bg-bg-primary rounded-lg shadow-lg">
           <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green rounded-full text-white">
+              <div className={`p-2 rounded-full text-white ${isEditMode ? 'bg-gold' : 'bg-green'}`}>
                 <Check size={24} />
               </div>
-              <h2 className="text-2xl font-medium">Meeting Scheduled!</h2>
+              <h2 className="text-2xl font-medium">
+                {isEditMode ? 'Meeting Updated!' : 'Meeting Scheduled!'}
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -75,9 +79,12 @@ const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
 
           <div className="p-6">
             {/* Success Message */}
-            <div className="mb-6 p-4 bg-green bg-opacity-10 border border-green rounded-md">
-              <p className="text-green font-medium">
-                The meeting has been added to the calendar. Would you like to send out invitations to the team members?
+            <div className={`mb-6 p-4 bg-opacity-10 border rounded-md ${isEditMode ? 'bg-gold border-gold' : 'bg-green border-green'}`}>
+              <p className={`font-medium ${isEditMode ? 'text-gold' : 'text-green'}`}>
+                {isEditMode 
+                  ? 'The meeting has been updated successfully. Would you like to send updated invitations to the team members?'
+                  : 'The meeting has been added to the calendar. Would you like to send out invitations to the team members?'
+                }
               </p>
             </div>
 
@@ -153,11 +160,33 @@ const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
                   <span className="font-medium">Email Invitation Preview</span>
                 </div>
                 <div className="text-sm text-text-secondary bg-bg-primary p-3 rounded border">
-                  <p className="font-medium mb-2">Subject: IEP Meeting Invitation - {meeting.studentName}</p>
-                  <p>You are invited to an IEP meeting for <strong>{meeting.studentName}</strong> ({meeting.meetingType}) on <strong>{meeting.date && formatDate(meeting.date)}</strong> at <strong>{meeting.time && formatTime(meeting.time)}</strong> for <strong>{meeting.durationMinutes} minutes</strong>.</p>
-                  <p className="mt-2">Please RSVP and let us know if you have any conflicts.</p>
+                  <p className="font-medium mb-2">
+                    Subject: {isEditMode ? 'UPDATED: ' : ''}IEP Meeting {isEditMode ? 'Update' : 'Invitation'} - {meeting.studentName}
+                  </p>
+                  <p>
+                    {isEditMode 
+                      ? `The IEP meeting for ${meeting.studentName} has been updated. New details: ${meeting.meetingType} on ${meeting.date && formatDate(meeting.date)} at ${meeting.time && formatTime(meeting.time)} for ${meeting.durationMinutes} minutes. Please confirm your availability.`
+                      : `You are invited to an IEP meeting for ${meeting.studentName} (${meeting.meetingType}) on ${meeting.date && formatDate(meeting.date)} at ${meeting.time && formatTime(meeting.time)} for ${meeting.durationMinutes} minutes.`
+                    }
+                  </p>
+                  <p className="mt-2">
+                    {isEditMode 
+                      ? 'Please update your RSVP and let us know if you have any conflicts with the new time.'
+                      : 'Please RSVP and let us know if you have any conflicts.'
+                    }
+                  </p>
                 </div>
               </div>
+
+              {/* Edit Mode Notice */}
+              {isEditMode && (
+                <div className="mb-6 p-4 bg-gold bg-opacity-10 border border-gold rounded-md">
+                  <h4 className="font-medium text-gold mb-2">Important: Meeting Update Notice</h4>
+                  <p className="text-sm text-text-secondary">
+                    Since this meeting was updated, all participant RSVP statuses have been reset to "Pending" and they will need to respond again to confirm their availability for the new meeting details.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -170,10 +199,12 @@ const MeetingConfirmationModal: React.FC<MeetingConfirmationModalProps> = ({
               </button>
               <button
                 onClick={handleSendInvitations}
-                className="px-6 py-3 bg-teal text-white rounded-md hover:bg-opacity-90 transition-colors font-medium flex items-center gap-2"
+                className={`px-6 py-3 text-white rounded-md hover:bg-opacity-90 transition-colors font-medium flex items-center gap-2 ${
+                  isEditMode ? 'bg-gold' : 'bg-teal'
+                }`}
               >
                 <Mail size={20} />
-                Send Invitations
+                {isEditMode ? 'Send Updated Invitations' : 'Send Invitations'}
               </button>
             </div>
           </div>

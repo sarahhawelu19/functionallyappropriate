@@ -6,6 +6,9 @@ interface MeetingsContextType {
   setIepMeetings: React.Dispatch<React.SetStateAction<IEPMeeting[]>>;
   updateMeetingRSVP: (meetingId: string, participantId: string, newStatus: MeetingParticipantRSVP['status'], note?: string) => void;
   addMeeting: (meeting: IEPMeeting) => void;
+  updateMeeting: (updatedMeeting: IEPMeeting) => void; // NEW: Update existing meeting
+  editingMeetingId: string | null; // NEW: Track which meeting is being edited
+  setEditingMeetingId: React.Dispatch<React.SetStateAction<string | null>>; // NEW: Set editing state
 }
 
 const MeetingsContext = createContext<MeetingsContextType | undefined>(undefined);
@@ -24,6 +27,7 @@ interface MeetingsProviderProps {
 
 export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) => {
   const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
+  const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null); // NEW: Track editing state
 
   const updateMeetingRSVP = (
     meetingId: string, 
@@ -56,12 +60,33 @@ export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) 
     setIepMeetings(prev => [...prev, meeting]);
   };
 
+  // NEW: Update existing meeting function
+  const updateMeeting = (updatedMeeting: IEPMeeting) => {
+    setIepMeetings(prevMeetings => 
+      prevMeetings.map(meeting => 
+        meeting.id === updatedMeeting.id 
+          ? {
+              ...updatedMeeting,
+              // Reset all participants to 'Pending' when meeting details change
+              participants: updatedMeeting.teamMemberIds.map(teamMemberId => ({
+                teamMemberId,
+                status: 'Pending' as const,
+              })),
+            }
+          : meeting
+      )
+    );
+  };
+
   return (
     <MeetingsContext.Provider value={{ 
       iepMeetings, 
       setIepMeetings, 
       updateMeetingRSVP, 
-      addMeeting 
+      addMeeting,
+      updateMeeting, // NEW
+      editingMeetingId, // NEW
+      setEditingMeetingId // NEW
     }}>
       {children}
     </MeetingsContext.Provider>
