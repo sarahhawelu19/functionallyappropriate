@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DaySlotsModal from '../components/scheduling/DaySlotsModal';
+import MeetingConfirmationModal from '../components/scheduling/MeetingConfirmationModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 
@@ -23,6 +24,10 @@ const Scheduling: React.FC = () => {
   // State for expanded day view
   const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const [expandedDaySlots, setExpandedDaySlots] = useState<AvailableSlot[]>([]);
+
+  // State for confirmation modal
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [confirmedMeetingDetails, setConfirmedMeetingDetails] = useState<IEPMeeting | null>(null);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -76,12 +81,52 @@ const Scheduling: React.FC = () => {
     // Add to meetings list
     setIepMeetings(prev => [...prev, finalMeeting]);
     
-    // Clear states after successful scheduling
+    // Set confirmation modal details and open it
+    setConfirmedMeetingDetails(finalMeeting);
+    setIsConfirmationModalOpen(true);
+    
+    // Clear expanded day states
+    setExpandedDay(null);
+    setExpandedDaySlots([]);
+  };
+
+  const handleConfirmationClose = () => {
+    // Reset all states and return to initial view
+    setIsConfirmationModalOpen(false);
+    setConfirmedMeetingDetails(null);
     setCurrentMeetingProposal(null);
     setCalculatedAvailability(null);
     setExpandedDay(null);
     setExpandedDaySlots([]);
-    setViewMode('initial'); // Return to initial view after scheduling
+    setViewMode('initial');
+  };
+
+  const handleSendInvitations = (meeting: IEPMeeting) => {
+    console.log("Sending invitations for meeting:", meeting);
+    
+    // Simulate sending emails to team members
+    meeting.teamMemberIds?.forEach(memberId => {
+      const teamMember = mockTeamMembers.find(member => member.id === memberId);
+      if (teamMember) {
+        const formattedDate = meeting.date ? new Date(meeting.date).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }) : '';
+        
+        const formattedTime = meeting.time ? (() => {
+          const [hour, minute] = meeting.time.split(':').map(Number);
+          const period = hour >= 12 ? 'PM' : 'AM';
+          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+          return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+        })() : '';
+        
+        console.log(`Simulated email to ${teamMember.name} <${teamMember.email}>: You are invited to an IEP meeting for ${meeting.studentName} (${meeting.meetingType}) on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please RSVP.`);
+      }
+    });
+    
+    console.log("All invitations sent successfully!");
   };
 
   const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
@@ -207,6 +252,13 @@ const Scheduling: React.FC = () => {
           onClose={() => setIsNewMeetingModalOpen(false)}
           onScheduleMeeting={handleScheduleMeeting}
           initialProposal={currentMeetingProposal}
+        />
+
+        <MeetingConfirmationModal
+          isOpen={isConfirmationModalOpen}
+          onClose={handleConfirmationClose}
+          onSendInvitations={handleSendInvitations}
+          meeting={confirmedMeetingDetails}
         />
       </div>
     );
@@ -474,6 +526,13 @@ const Scheduling: React.FC = () => {
         day={expandedDay}
         commonSlotsForDay={expandedDaySlots}
         onSlotSelect={handleSlotClick}
+      />
+
+      <MeetingConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleConfirmationClose}
+        onSendInvitations={handleSendInvitations}
+        meeting={confirmedMeetingDetails}
       />
     </div>
   );
