@@ -43,7 +43,7 @@ const MyMeetingsPage: React.FC = () => {
   const getStatusIcon = (status: MeetingParticipantRSVP['status']) => {
     switch (status) {
       case 'Accepted':
-        return <CheckCircle className="text-green" size={20} />;
+        return <CheckCircle className="text-green\" size={20} />;
       case 'Declined':
         return <XCircle className="text-red-500" size={20} />;
       case 'ProposedNewTime':
@@ -279,7 +279,7 @@ const MyMeetingsPage: React.FC = () => {
                         // Organizer Actions
                         <div>
                           <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <Crown className="text-gold" size={16} />
+                            <Crown className="text-gold\" size={16} />
                             Meeting Actions:
                           </h4>
                           
