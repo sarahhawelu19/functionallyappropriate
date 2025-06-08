@@ -140,8 +140,13 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
               className="flex-grow quill-editor-container"
             />
           </div>
+
+        </div> {/* END OF NEW WRAPPER for scrollable middle content */}
+
+        <div className="mt-auto pt-4 border-t border-border"> {/* Main footer container */}
           
-          <div className="p-3 border-t border-b border-border"> {/* Removed mb-4 from here, parent wrapper has it */}
+          {/* "Manage Placeholders" section moved here */}
+          <div className="mb-4 p-3 border-b border-border"> {/* Added bottom border, removed top */}
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-md font-semibold text-text-primary">Manage Placeholders</h4>
               <button 
@@ -165,19 +170,19 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
             )}
           </div>
 
-        </div> {/* END OF NEW WRAPPER for scrollable middle content */}
-
-        <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-border"> {/* Action Buttons - fixed size */}
-          <button onClick={onClose} className="btn border border-gray-300 hover:bg-gray-100 text-gray-700">
-            Cancel
-          </button>
-          <button 
-            onClick={handleSave} 
-            className="btn bg-accent-gold text-black"
-            disabled={!templateName.trim()} // Disable save if no name
-          >
-            Save Template
-          </button>
+          {/* Original Action Buttons */}
+          <div className="flex justify-end gap-3">
+            <button onClick={onClose} className="btn border border-gray-300 hover:bg-gray-100 text-gray-700">
+              Cancel
+            </button>
+            <button 
+              onClick={handleSave} 
+              className="btn bg-accent-gold text-black"
+              disabled={!templateName.trim()} // Disable save if no name
+            >
+              Save Template
+            </button>
+          </div>
         </div>
         
         {isDefinePlaceholderModalOpen && (
