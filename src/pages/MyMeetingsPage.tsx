@@ -63,7 +63,7 @@ const MyMeetingsPage: React.FC = () => {
       case 'VotedOnAlternative':
         return <CheckCircle className="text-blue-500\" size={20} />;
       default:
-        return <AlertCircle className="text-text-secondary" size={20} />;
+        return <AlertCircle className="text-text-secondary\" size={20} />;
     }
   };
 
