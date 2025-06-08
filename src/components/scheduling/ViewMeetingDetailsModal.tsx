@@ -323,7 +323,7 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
                     // Organizer Actions
                     <div>
                       <h4 className="font-medium mb-4 flex items-center gap-2">
-                        <Crown className="text-gold" size={16} />
+                        <Crown className="text-gold\" size={16} />
                         Organizer Actions
                       </h4>
                       
