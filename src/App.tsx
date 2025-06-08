@@ -6,7 +6,7 @@ import GoalWriting from './pages/GoalWriting';
 import ReportDrafting from './pages/ReportDrafting';
 import CreateReportPage from './pages/CreateReportPage';
 import StudentDashboard from './pages/StudentDashboard';
-import MyInvitationsPage from './pages/MyInvitationsPage';
+import MyMeetingsPage from './pages/MyMeetingsPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
         <Route path="reports" element={<ReportDrafting />} />
         <Route path="reports/new" element={<CreateReportPage />} />
         <Route path="dashboard" element={<StudentDashboard />} />
-        <Route path="invitations" element={<MyInvitationsPage />} />
+        <Route path="my-meetings" element={<MyMeetingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
