@@ -124,6 +124,15 @@ const Scheduling: React.FC = () => {
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-medium">Scheduling</h1>
+          <button 
+            className="btn bg-accent-teal text-sm px-4 py-2"
+            onClick={() => {
+              setCurrentMeetingProposal({ studentName: 'Test Student', meetingType: 'Annual IEP', teamMemberIds: ['tm1', 'tm2'] });
+              setViewMode('availability');
+            }}
+          >
+            Demo: View Availability
+          </button>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
