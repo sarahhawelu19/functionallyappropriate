@@ -53,6 +53,14 @@ export interface IndividualBlackout {
 // Type for different IEP Meeting types
 export type MeetingType = 'Annual IEP' | 'Triennial IEP' | '30 Day IEP' | 'Amendment IEP' | 'Other';
 
+// NEW: RSVP tracking interface
+export interface MeetingParticipantRSVP {
+  teamMemberId: string;
+  status: 'Pending' | 'Accepted' | 'Declined' | 'ProposedNewTime';
+  note?: string; // For decline reason or other comments
+  respondedAt?: string; // ISO timestamp when they responded
+}
+
 export interface IEPMeeting {
   id: string;
   eventType: 'iep_meeting';
@@ -67,6 +75,7 @@ export interface IEPMeeting {
   status: 'pending_scheduling' | 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
   createdByUserId: string;
+  participants: MeetingParticipantRSVP[]; // NEW: RSVP tracking
 }
 
 export interface ServiceSession {

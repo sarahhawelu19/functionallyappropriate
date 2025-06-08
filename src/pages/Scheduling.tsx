@@ -6,13 +6,14 @@ import DaySlotsModal from '../components/scheduling/DaySlotsModal';
 import MeetingConfirmationModal from '../components/scheduling/MeetingConfirmationModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
+import { useMeetings } from '../context/MeetingsContext';
 
 type ViewMode = 'initial' | 'availability';
 
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
+  const { iepMeetings, addMeeting } = useMeetings(); // Use context instead of local state
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [calculatedAvailability, setCalculatedAvailability] = useState<{
@@ -70,17 +71,22 @@ const Scheduling: React.FC = () => {
   const handleSlotClick = (slot: AvailableSlot) => {
     if (!currentMeetingProposal) return;
     
-    // Create final meeting object directly
+    // Create final meeting object directly with RSVP participants initialized
     const finalMeeting: IEPMeeting = {
       ...currentMeetingProposal,
       date: slot.date,
       time: slot.startTime,
       durationMinutes: currentMeetingProposal.durationMinutes!,
       status: 'scheduled',
+      // Initialize participants array with all team members set to 'Pending'
+      participants: (currentMeetingProposal.teamMemberIds || []).map(teamMemberId => ({
+        teamMemberId,
+        status: 'Pending' as const,
+      })),
     } as IEPMeeting;
     
-    // Add to meetings list
-    setIepMeetings(prev => [...prev, finalMeeting]);
+    // Add to meetings list using context
+    addMeeting(finalMeeting);
     
     // Set confirmation modal details and open it - KEY CHANGE HERE
     setConfirmedMeetingDetails(finalMeeting);

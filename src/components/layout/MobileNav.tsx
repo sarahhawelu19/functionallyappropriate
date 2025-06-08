@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Calendar, Target, FileText, BarChart3 } from 'lucide-react';
+import { Calendar, Target, FileText, BarChart3, Mail } from 'lucide-react';
 
 const MobileNav: React.FC = () => {
   const navItems = [
@@ -8,6 +8,7 @@ const MobileNav: React.FC = () => {
     { path: '/goals', label: 'Goals', icon: <Target size={20} />, accent: 'green' },
     { path: '/reports', label: 'Reports', icon: <FileText size={20} />, accent: 'gold' },
     { path: '/dashboard', label: 'Dashboard', icon: <BarChart3 size={20} />, accent: 'purple' },
+    { path: '/invitations', label: 'Invites', icon: <Mail size={20} />, accent: 'blue' },
   ];
 
   return (
