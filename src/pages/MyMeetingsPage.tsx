@@ -12,11 +12,17 @@ const MyMeetingsPage: React.FC = () => {
   const currentUser = mockTeamMembers.find(member => member.id === currentUserId);
   
   const navigate = useNavigate();
-  const { iepMeetings, updateMeetingRSVP, setIepMeetings, setEditingMeetingId } = useMeetings();
+  const { 
+    iepMeetings, 
+    updateMeetingRSVP, 
+    setIepMeetings, 
+    setEditingMeetingId,
+    setMeetingToProposeAlternativeFor // NEW: For proposing alternatives
+  } = useMeetings();
   const [declineNote, setDeclineNote] = useState('');
   const [showDeclineModal, setShowDeclineModal] = useState<string | null>(null);
   
-  // NEW: State for ViewMeetingDetailsModal
+  // State for ViewMeetingDetailsModal
   const [viewingMeeting, setViewingMeeting] = useState<any | null>(null);
 
   // Filter meetings where current user is a participant (either organizer or invitee)
@@ -54,6 +60,8 @@ const MyMeetingsPage: React.FC = () => {
         return <XCircle className="text-red-500\" size={20} />;
       case 'ProposedNewTime':
         return <ClockIcon className="text-gold\" size={20} />;
+      case 'VotedOnAlternative':
+        return <CheckCircle className="text-blue-500\" size={20} />;
       default:
         return <AlertCircle className="text-text-secondary" size={20} />;
     }
@@ -67,6 +75,8 @@ const MyMeetingsPage: React.FC = () => {
         return 'text-red-500 bg-red-500 bg-opacity-10 border-red-500';
       case 'ProposedNewTime':
         return 'text-gold bg-gold bg-opacity-10 border-gold';
+      case 'VotedOnAlternative':
+        return 'text-blue-500 bg-blue-500 bg-opacity-10 border-blue-500';
       default:
         return 'text-text-secondary bg-bg-secondary border-border';
     }
@@ -86,12 +96,19 @@ const MyMeetingsPage: React.FC = () => {
     setDeclineNote('');
   };
 
-  const handleProposeNewTime = (meetingId: string) => {
-    // For now, just mark as "Proposed New Time" - functionality to be added later
-    updateMeetingRSVP(meetingId, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+  // UPDATED: Handle propose new time - navigate to Scheduling page
+  const handleProposeNewTime = (meeting: any) => {
+    // Update RSVP status to indicate they're proposing a new time
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+    
+    // Set the meeting context for proposing alternative
+    setMeetingToProposeAlternativeFor(meeting);
+    
+    // Navigate to scheduling page - it will detect "proposing alternative" mode
+    navigate('/scheduling');
   };
 
-  // NEW: Handle Edit Meeting - Navigate to Scheduling page with meeting details
+  // Handle Edit Meeting - Navigate to Scheduling page with meeting details
   const handleEditMeeting = (meeting: any) => {
     // Set the meeting ID being edited in context
     setEditingMeetingId(meeting.id);
@@ -112,12 +129,12 @@ const MyMeetingsPage: React.FC = () => {
     }
   };
 
-  // NEW: Handle meeting card click to open details modal
+  // Handle meeting card click to open details modal
   const handleMeetingClick = (meeting: any) => {
     setViewingMeeting(meeting);
   };
 
-  // NEW: ViewMeetingDetailsModal handlers
+  // ViewMeetingDetailsModal handlers
   const handleEditFromModal = (meeting: any) => {
     setEditingMeetingId(meeting.id);
     navigate('/scheduling');
@@ -141,8 +158,16 @@ const MyMeetingsPage: React.FC = () => {
     updateMeetingRSVP(meetingId, currentUserId, 'Declined');
   };
 
+  // UPDATED: Handle propose from modal
   const handleProposeFromModal = (meeting: any) => {
+    // Update RSVP status to indicate they're proposing a new time
     updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+    
+    // Set the meeting context for proposing alternative
+    setMeetingToProposeAlternativeFor(meeting);
+    
+    // Navigate to scheduling page
+    navigate('/scheduling');
   };
 
   const getOtherParticipants = (meeting: any) => {
@@ -158,9 +183,10 @@ const MyMeetingsPage: React.FC = () => {
     const declined = participants.filter((p: MeetingParticipantRSVP) => p.status === 'Declined').length;
     const pending = participants.filter((p: MeetingParticipantRSVP) => p.status === 'Pending').length;
     const proposed = participants.filter((p: MeetingParticipantRSVP) => p.status === 'ProposedNewTime').length;
+    const voted = participants.filter((p: MeetingParticipantRSVP) => p.status === 'VotedOnAlternative').length;
     const total = participants.length;
     
-    return { accepted, declined, pending, proposed, total };
+    return { accepted, declined, pending, proposed, voted, total };
   };
 
   const isOrganizer = (meeting: any): boolean => {
@@ -189,6 +215,7 @@ const MyMeetingsPage: React.FC = () => {
             const otherParticipants = getOtherParticipants(meeting);
             const responseSummary = getResponseSummary(meeting);
             const userIsOrganizer = isOrganizer(meeting);
+            const hasAlternativeProposals = meeting.alternativeProposals && meeting.alternativeProposals.length > 0;
             
             return (
               <div 
@@ -211,6 +238,12 @@ const MyMeetingsPage: React.FC = () => {
                               Organizer
                             </div>
                           )}
+                          {hasAlternativeProposals && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 bg-opacity-10 border border-blue-500 rounded-full text-xs font-medium text-blue-500">
+                              <ClockIcon size={12} />
+                              {meeting.alternativeProposals.length} Alternative{meeting.alternativeProposals.length !== 1 ? 's' : ''}
+                            </div>
+                          )}
                         </div>
                         {meeting.customMeetingType && (
                           <p className="text-sm text-text-secondary mb-2">
@@ -222,7 +255,7 @@ const MyMeetingsPage: React.FC = () => {
                       {!userIsOrganizer && (
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(rsvpStatus?.status || 'Pending')}`}>
                           {getStatusIcon(rsvpStatus?.status || 'Pending')}
-                          {rsvpStatus?.status || 'Pending'}
+                          {rsvpStatus?.status === 'VotedOnAlternative' ? 'Voted' : rsvpStatus?.status || 'Pending'}
                         </div>
                       )}
                     </div>
@@ -261,7 +294,7 @@ const MyMeetingsPage: React.FC = () => {
                       <h4 className="font-medium mb-3">
                         {userIsOrganizer ? 'Team Response Summary:' : 'Response Summary:'}
                       </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="text-green" size={16} />
                           <span className="font-medium">{responseSummary.accepted}</span>
@@ -284,16 +317,34 @@ const MyMeetingsPage: React.FC = () => {
                             <span className="text-text-secondary">Proposed</span>
                           </div>
                         )}
+                        {responseSummary.voted > 0 && (
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="text-blue-500" size={16} />
+                            <span className="font-medium">{responseSummary.voted}</span>
+                            <span className="text-text-secondary">Voted</span>
+                          </div>
+                        )}
                       </div>
                       
                       {userIsOrganizer && (
                         <div className="mt-3 pt-3 border-t border-border">
                           <div className="text-xs text-text-secondary">
-                            Response Rate: {Math.round(((responseSummary.accepted + responseSummary.declined + responseSummary.proposed) / responseSummary.total) * 100)}%
+                            Response Rate: {Math.round(((responseSummary.accepted + responseSummary.declined + responseSummary.proposed + responseSummary.voted) / responseSummary.total) * 100)}%
                           </div>
                         </div>
                       )}
                     </div>
+
+                    {/* Alternative Proposals Summary */}
+                    {hasAlternativeProposals && (
+                      <div className="mb-4 p-3 bg-blue-500 bg-opacity-10 border border-blue-500 rounded-md">
+                        <h4 className="font-medium text-blue-500 mb-2">Alternative Times Proposed</h4>
+                        <div className="text-sm text-text-secondary">
+                          {meeting.alternativeProposals.length} alternative time{meeting.alternativeProposals.length !== 1 ? 's' : ''} proposed by team members. 
+                          <span className="text-blue-500 font-medium"> Click to view details and vote.</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Click to view details hint */}
                     <div className="text-sm text-teal hover:underline">

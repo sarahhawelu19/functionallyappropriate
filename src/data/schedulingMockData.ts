@@ -53,10 +53,25 @@ export interface IndividualBlackout {
 // Type for different IEP Meeting types
 export type MeetingType = 'Annual IEP' | 'Triennial IEP' | '30 Day IEP' | 'Amendment IEP' | 'Other';
 
-// NEW: RSVP tracking interface
+// NEW: Alternative time proposal interface
+export interface AlternativeTimeProposal {
+  proposalId: string; // Unique ID for this proposal
+  proposedDate: string; // "YYYY-MM-DD"
+  proposedTime: string; // "HH:MM" (e.g., "09:00")
+  // durationMinutes is assumed to be the same as the original meeting's duration
+  proposedByMemberId: string;
+  proposedAt: string; // ISO timestamp when proposal was made
+  votes: Array<{
+    teamMemberId: string;
+    vote: 'AcceptAlternative' | 'PreferOriginal' | 'Pending'; // Simple voting
+    votedAt?: string; // ISO timestamp when vote was cast
+  }>;
+}
+
+// UPDATED: RSVP tracking interface with new status
 export interface MeetingParticipantRSVP {
   teamMemberId: string;
-  status: 'Pending' | 'Accepted' | 'Declined' | 'ProposedNewTime';
+  status: 'Pending' | 'Accepted' | 'Declined' | 'ProposedNewTime' | 'VotedOnAlternative';
   note?: string; // For decline reason or other comments
   respondedAt?: string; // ISO timestamp when they responded
 }
@@ -75,7 +90,8 @@ export interface IEPMeeting {
   status: 'pending_scheduling' | 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
   createdByUserId: string;
-  participants: MeetingParticipantRSVP[]; // NEW: RSVP tracking
+  participants: MeetingParticipantRSVP[]; // RSVP tracking
+  alternativeProposals?: AlternativeTimeProposal[]; // NEW: Alternative time proposals
 }
 
 export interface ServiceSession {
