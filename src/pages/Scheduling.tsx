@@ -104,6 +104,22 @@ const Scheduling: React.FC = () => {
     setIsNewMeetingModalOpen(true);
   };
 
+  const handleDemoAvailability = () => {
+    // Create a demo meeting proposal
+    const demoProposal: Partial<IEPMeeting> = {
+      id: 'demo-' + Date.now(),
+      studentId: 's1',
+      studentName: 'Demo Student',
+      meetingType: 'Annual IEP',
+      teamMemberIds: ['tm1', 'tm2', 'tm3'],
+      status: 'pending_scheduling',
+      createdByUserId: 'currentUserPlaceholderId',
+    };
+    
+    setCurrentMeetingProposal(demoProposal);
+    setViewMode('availability');
+  };
+
   const getTeamMemberNames = (teamMemberIds: string[]) => {
     return teamMemberIds
       .map(id => mockTeamMembers.find(member => member.id === id)?.name)
@@ -126,10 +142,7 @@ const Scheduling: React.FC = () => {
           <h1 className="text-2xl font-medium">Scheduling</h1>
           <button 
             className="btn bg-accent-teal text-sm px-4 py-2"
-            onClick={() => {
-              setCurrentMeetingProposal({ studentName: 'Test Student', meetingType: 'Annual IEP', teamMemberIds: ['tm1', 'tm2'] });
-              setViewMode('availability');
-            }}
+            onClick={handleDemoAvailability}
           >
             Demo: View Availability
           </button>
