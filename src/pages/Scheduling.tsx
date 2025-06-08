@@ -91,7 +91,6 @@ const Scheduling: React.FC = () => {
   };
 
   const handleBackToInitial = () => {
-    // Set view mode to initial and immediately reopen the modal with the current proposal
     setViewMode('initial');
     setIsNewMeetingModalOpen(true);
   };
