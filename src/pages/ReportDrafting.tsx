@@ -1,149 +1,224 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Check, Download, Plus } from 'lucide-react';
+import { FileText, Copy, Check, Download, Plus, FilePenLine, Sparkles, MessageSquarePlus, Lightbulb, ArrowRight, UploadCloud } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useDropzone } from 'react-dropzone';
+import { useReports } from '../context/ReportContext';
+import mammoth from 'mammoth';
+import TemplateEditorModal from '../components/modals/TemplateEditorModal';
+
+// Interface for template objects
+interface AppTemplate {
+  id: string;
+  name: string;
+  description: string;
+  content: string; // Can be Markdown for predefined, HTML for custom
+  isCustom?: boolean; // Flag to distinguish
+  placeholderKeys?: string[]; // For custom templates
+}
 
 const ReportDrafting: React.FC = () => {
-  const [reports, setReports] = useState([
-    { id: 1, name: 'John Smith', type: 'Progress Report', date: '2025-01-15', status: 'Draft' },
-    { id: 2, name: 'Emily Johnson', type: 'Initial Evaluation', date: '2025-02-10', status: 'Completed' },
-    { id: 3, name: 'Michael Davis', type: 'Triennial Review', date: '2025-03-05', status: 'In Progress' },
-  ]);
+  const { reports } = useReports();
   
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isTemplateEditorModalOpen, setIsTemplateEditorModalOpen] = useState(false);
+  const [newTemplateInitialContent, setNewTemplateInitialContent] = useState(''); // Will store HTML
+  const [newTemplateInitialName, setNewTemplateInitialName] = useState('');
   
-  const templates = [
-    {
-      id: 'progress',
-      name: 'Progress Report',
-      content: `# QUARTERLY PROGRESS REPORT
+  // Predefined templates with isCustom flag
+  const predefinedTemplates: AppTemplate[] = [
+    { 
+      id: 'academic-achievement',
+      name: 'Academic Achievement Report',
+      description: 'Comprehensive report on student academic skills, often using WJ IV, WIAT, etc.',
+      content: `# ACADEMIC ACHIEVEMENT REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-ID: [STUDENT ID]
-Grade: [GRADE]
-Reporting Period: [DATE RANGE]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER]
 
-## Goal Progress Summary
-[GOAL AREA 1]: [PROGRESS DESCRIPTION]
-Current Performance: [MEASUREMENT]
-Status: [NOT MET / PARTIALLY MET / MET]
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-[GOAL AREA 2]: [PROGRESS DESCRIPTION]
-Current Performance: [MEASUREMENT]
-Status: [NOT MET / PARTIALLY MET / MET]
+        ## Background Information
+        [RELEVANT BACKGROUND INFORMATION]
 
-## Instructional Strategies Used
-- [STRATEGY 1]
-- [STRATEGY 2]
-- [STRATEGY 3]
+        ## Assessment Instruments Administered
+        Woodcock-Johnson IV Tests of Achievement (WJ IV ACH)
+        [Other relevant academic tests or checklists]
 
-## Recommendations
-[RECOMMENDATIONS BASED ON PROGRESS]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Next Steps
-[PLANNED INTERVENTIONS OR ADJUSTMENTS]
+        ## Test Results & Interpretation
+        Woodcock-Johnson IV Tests of Achievement
 
-Report Completed By: [TEACHER NAME]
-Date: [DATE]`,
+        Clusters:
+        Broad Achievement: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Reading: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Written Language: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+        Mathematics: SS [SCORE], PR [PERCENTILE], Range [DESCRIPTIVE RANGE]
+
+        Subtests (Examples):
+        Letter-Word Identification: SS [SCORE], PR [PERCENTILE]
+        Passage Comprehension: SS [SCORE], PR [PERCENTILE]
+        Spelling: SS [SCORE], PR [PERCENTILE]
+        Calculation: SS [SCORE], PR [PERCENTILE]
+        Applied Problems: SS [SCORE], PR [PERCENTILE]
+
+        [NARRATIVE INTERPRETATION OF ACADEMIC SCORES]
+
+        ## Summary of Findings
+        [KEY FINDINGS FROM ACADEMIC ASSESSMENT]
+
+        ## Recommendations
+        [ACADEMIC RECOMMENDATIONS]`,
+      isCustom: false
     },
     {
-      id: 'present-levels',
-      name: 'Present Levels',
-      content: `# PRESENT LEVELS OF ACADEMIC ACHIEVEMENT AND FUNCTIONAL PERFORMANCE
+      id: 'cognitive-processing',
+      name: 'Cognitive Processing Report',
+      description: 'Details student cognitive abilities, processing strengths, and weaknesses.',
+      content: `# COGNITIVE PROCESSING REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-ID: [STUDENT ID]
-Grade: [GRADE]
-Date: [DATE]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER]
 
-## Academic Performance
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-### Reading
-[DESCRIBE CURRENT READING PERFORMANCE INCLUDING DECODING, FLUENCY, AND COMPREHENSION SKILLS]
+        ## Background Information
+        [RELEVANT BACKGROUND INFORMATION]
 
-### Writing
-[DESCRIBE CURRENT WRITING PERFORMANCE INCLUDING ORGANIZATION, GRAMMAR, AND EXPRESSION]
+        ## Assessment Instruments Administered
+        [Name of Cognitive Assessment, e.g., WISC-V, DAS-II, KABC-II]
+        [Other cognitive or processing measures]
 
-### Mathematics
-[DESCRIBE CURRENT MATH PERFORMANCE INCLUDING CALCULATION AND PROBLEM-SOLVING SKILLS]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Functional Performance
+        ## Test Results & Interpretation
+        [Name of Cognitive Assessment]
 
-### Social/Emotional
-[DESCRIBE SOCIAL SKILLS, EMOTIONAL REGULATION, AND INTERPERSONAL INTERACTIONS]
+        Overall/Composite Scores:
+        Full Scale IQ (FSIQ) / General Conceptual Ability (GCA): Score [SCORE], PR [PERCENTILE], CI [CONFIDENCE INTERVAL], Range [DESCRIPTIVE RANGE]
 
-### Behavior
-[DESCRIBE BEHAVIORAL STRENGTHS AND AREAS OF CONCERN]
+        Index/Factor Scores (Examples):
+        Verbal Comprehension Index (VCI): Score [SCORE], PR [PERCENTILE]
+        Visual Spatial Index (VSI): Score [SCORE], PR [PERCENTILE]
+        Fluid Reasoning Index (FRI): Score [SCORE], PR [PERCENTILE]
+        Working Memory Index (WMI): Score [SCORE], PR [PERCENTILE]
+        Processing Speed Index (PSI): Score [SCORE], PR [PERCENTILE]
 
-### Communication
-[DESCRIBE EXPRESSIVE AND RECEPTIVE LANGUAGE SKILLS]
+        [NARRATIVE INTERPRETATION OF COGNITIVE SCORES AND PROCESSING AREAS]
 
-### Fine/Gross Motor Skills
-[DESCRIBE MOTOR DEVELOPMENT AND FUNCTIONING]
+        ## Summary of Cognitive Strengths and Weaknesses
+        [SUMMARY OF KEY COGNITIVE FINDINGS]
 
-## Impact of Disability
-[EXPLAIN HOW THE STUDENT'S DISABILITY AFFECTS INVOLVEMENT AND PROGRESS IN THE GENERAL CURRICULUM]
+        ## Implications for Learning
+        [HOW COGNITIVE PROFILE IMPACTS LEARNING]
 
-## Strengths and Interests
-[LIST STUDENT'S STRENGTHS, INTERESTS, AND PREFERENCES]
-
-## Parent/Student Input
-[SUMMARIZE INPUT FROM PARENTS AND STUDENT REGARDING EDUCATIONAL CONCERNS AND PRIORITIES]
-
-Completed By: [TEACHER NAME]
-Date: [DATE]`,
+        ## Recommendations
+        [RECOMMENDATIONS BASED ON COGNITIVE PROFILE]`,
+      isCustom: false
     },
     {
-      id: 'behavior',
-      name: 'Behavior Intervention Plan',
-      content: `# BEHAVIOR INTERVENTION PLAN (BIP)
+      id: 'speech-language',
+      name: 'Speech & Language Report',
+      description: 'Assesses various aspects of communication including receptive/expressive language, articulation, fluency, and voice.',
+      content: `# SPEECH AND LANGUAGE EVALUATION REPORT
 
-## Student Information
-Name: [STUDENT NAME]
-ID: [STUDENT ID]
-Grade: [GRADE]
-Date: [DATE]
+        ## Student Information
+        Name: [STUDENT NAME]
+        Date of Birth: [DOB]
+        Date of Evaluation: [DOE]
+        Grade: [GRADE]
+        Examiner: [EXAMINER, SLP]
 
-## Target Behavior
-[OPERATIONALLY DEFINE THE BEHAVIOR OF CONCERN]
+        ## Reason for Referral
+        [REASON FOR REFERRAL]
 
-## Functional Behavior Assessment Summary
-### Antecedents (When is the behavior most likely to occur?)
-[DESCRIBE SITUATIONS, TIMES, SETTINGS WHEN BEHAVIOR TYPICALLY OCCURS]
+        ## Background Information & Communication History
+        [RELEVANT BACKGROUND, DEVELOPMENTAL MILESTONES, PREVIOUS THERAPY]
 
-### Function of Behavior (Why is the behavior occurring?)
-[EXPLAIN THE PURPOSE THE BEHAVIOR SERVES FOR THE STUDENT]
+        ## Assessment Methods
+        Standardized Tests (e.g., CELF-5, PLS-5, GFTA-3)
+        Informal Measures (Language Sample, Observation, Criterion-Referenced)
+        Oral Motor Examination
 
-## Replacement Behavior
-[DESCRIBE THE APPROPRIATE BEHAVIOR THAT WILL SERVE THE SAME FUNCTION]
+        ## Behavioral Observations
+        [OBSERVATIONS DURING ASSESSMENT]
 
-## Prevention Strategies
-[LIST ENVIRONMENTAL MODIFICATIONS AND PROACTIVE APPROACHES]
+        ## Assessment Results & Interpretation
+        Receptive Language
+        [SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-## Teaching Strategies
-[DESCRIBE HOW THE REPLACEMENT BEHAVIOR WILL BE TAUGHT]
+        Expressive Language
+        [SKILLS ASSESSED, SCORES, INTERPRETATION]
 
-## Reinforcement Plan
-[EXPLAIN HOW THE REPLACEMENT BEHAVIOR WILL BE REINFORCED]
+        Articulation/Phonology
+        [SOUNDS IN ERROR, PHONOLOGICAL PROCESSES, INTELLIGIBILITY, SCORES]
 
-## Response Plan
-[DESCRIBE HOW STAFF WILL RESPOND WHEN TARGET BEHAVIOR OCCURS]
+        Fluency
+        [OBSERVATIONS, STUTTERING CHARACTERISTICS, IMPACT]
 
-## Data Collection
-[SPECIFY HOW PROGRESS WILL BE MONITORED AND MEASURED]
+        Voice
+        [QUALITY, PITCH, LOUDNESS]
 
-## Communication Plan
-[DESCRIBE HOW INFORMATION WILL BE SHARED BETWEEN SCHOOL AND HOME]
+        Oral Motor/Feeding (if applicable)
+        [FINDINGS]
 
-Team Members:
-- [NAME, ROLE]
-- [NAME, ROLE]
-- [NAME, ROLE]
+        ## Summary of Communication Strengths and Needs
+        [OVERALL SUMMARY]
 
-Review Date: [DATE]`,
-    },
+        ## Diagnostic Impressions & Eligibility (if applicable)
+        [SPEECH/LANGUAGE IMPAIRMENT DIAGNOSIS]
+
+        ## Recommendations
+        [THERAPY GOALS, CLASSROOM STRATEGIES, HOME SUGGESTIONS]`,
+      isCustom: false
+    }
   ];
+
+  // Manage all templates as state
+  const [allTemplates, setAllTemplates] = useState<AppTemplate[]>(predefinedTemplates);
+
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => { // Make async
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      if (file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          setNewTemplateInitialContent(result.value); // HTML string
+          setNewTemplateInitialName(file.name.replace(/\.docx$/, "")); // Remove .docx extension
+          setIsTemplateEditorModalOpen(true);
+        } catch (error) {
+          console.error("Error converting DOCX to HTML:", error);
+          alert("Could not process the DOCX file. It might be corrupted or an unsupported format.");
+        }
+      } else {
+        alert("Only .docx files are currently supported for creating custom templates.");
+      }
+    }
+  }, []); // No dependencies that would cause re-creation, setters are stable
+  
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt']
+    },
+    multiple: false
+  });
   
   const handleCopyTemplate = (content: string) => {
     navigator.clipboard.writeText(content);
@@ -151,16 +226,29 @@ Review Date: [DATE]`,
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSaveCustomTemplate = (name: string, contentHtml: string, placeholderKeys: string[]) => {
+    const newCustomTemplate: AppTemplate = {
+      id: `custom-${Date.now()}-${name.replace(/\s+/g, '_')}`, // More unique ID
+      name: name,
+      description: `Custom Template: ${name.substring(0, 50)}...`,
+      content: contentHtml, // This is HTML from Quill
+      isCustom: true,
+      placeholderKeys: placeholderKeys,
+    };
+    setAllTemplates(prevTemplates => [...prevTemplates, newCustomTemplate]);
+    alert(`Template "${name}" saved locally for this session!`);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-medium">Report Drafting</h1>
-        <button className="btn bg-accent-gold text-black">
+        <Link to="/reports/new" className="btn bg-accent-gold text-black">
           <span className="flex items-center gap-1">
             <Plus size={18} />
             New Report
           </span>
-        </button>
+        </Link>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -199,7 +287,7 @@ Review Date: [DATE]`,
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <button className="p-1.5 hover:bg-bg-secondary rounded-md transition-colors" aria-label="Edit report">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          <FilePenLine size={16} />
                         </button>
                         <button className="p-1.5 hover:bg-bg-secondary rounded-md transition-colors" aria-label="Download report">
                           <Download size={16} />
@@ -216,34 +304,51 @@ Review Date: [DATE]`,
             <div className="text-center py-8 text-text-secondary">
               <FileText size={40} className="mx-auto mb-2 opacity-30" />
               <p>No reports have been created yet</p>
-              <button className="mt-4 btn bg-accent-gold text-black">
+              <Link to="/reports/new" className="mt-4 btn bg-accent-gold text-black flex items-center gap-1">
                 <span className="flex items-center gap-1">
                   <Plus size={16} />
                   Create First Report
                 </span>
-              </button>
+              </Link>
             </div>
           )}
           
           {activeTemplate && (
             <div className="mt-6 border border-border rounded-md p-4">
               <div className="flex justify-between items-center mb-4">
+                {(() => {
+                  const currentDisplayTemplate = allTemplates.find(t => t.id === activeTemplate);
+                  return (
+                    <>
                 <h3 className="font-medium">
-                  {templates.find(t => t.id === activeTemplate)?.name} Template
+                        {currentDisplayTemplate?.name} Template
+                        {currentDisplayTemplate?.isCustom && (
+                          <span className="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">Custom</span>
+                        )}
                 </h3>
                 <button 
                   className="btn border border-gold text-gold hover:bg-gold hover:bg-opacity-10"
-                  onClick={() => handleCopyTemplate(templates.find(t => t.id === activeTemplate)?.content || '')}
+                        onClick={() => handleCopyTemplate(currentDisplayTemplate?.content || '')}
                 >
                   <span className="flex items-center gap-1">
                     {copied ? <Check size={16} /> : <Copy size={16} />}
                     {copied ? 'Copied!' : 'Copy to Clipboard'}
                   </span>
                 </button>
+                    </>
+                  );
+                })()}
               </div>
               
               <div className="bg-bg-secondary p-4 rounded-md whitespace-pre-wrap font-mono text-sm overflow-auto max-h-96">
-                {templates.find(t => t.id === activeTemplate)?.content}
+                {(() => {
+                  const currentDisplayTemplate = allTemplates.find(t => t.id === activeTemplate);
+                  return currentDisplayTemplate?.isCustom ? (
+                    <div dangerouslySetInnerHTML={{ __html: currentDisplayTemplate.content }} />
+                  ) : (
+                    currentDisplayTemplate?.content  // Assumes predefined is Markdown-like text
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -253,22 +358,71 @@ Review Date: [DATE]`,
           <h2 className="text-xl font-medium mb-4">Report Templates</h2>
           <p className="text-text-secondary mb-4">Use these templates to create standardized reports for your students.</p>
           
+          <div className="mb-6 p-6 border-2 border-dashed border-border rounded-md hover:border-gold transition-all cursor-pointer bg-bg-secondary hover:bg-opacity-50">
+            <div {...getRootProps()} className={`flex flex-col items-center justify-center text-center transition-all
+              ${isDragActive ? 'border-gold ring-2 ring-gold' : ''}
+              ${isDragAccept ? 'text-green' : ''}
+              ${isDragReject ? 'text-red-500' : ''}`}>
+              <input {...getInputProps()} />
+              <UploadCloud size={32} className="text-text-secondary mb-2" />
+              {isDragReject ? (
+                <p className="font-medium text-red-500">File type not accepted</p>
+              ) : isDragAccept ? (
+                <p className="font-medium text-green">Drop to upload template</p>
+              ) : isDragActive ? (
+                <p className="font-medium text-gold">Drop the file here</p>
+              ) : (
+                <>
+                  <p className="font-medium text-text-primary">Upload Custom Template</p>
+                  <p className="text-sm text-text-secondary">Drag & drop or click to browse</p>
+                </>
+              )}
+            </div>
+          </div>
+          
           <div className="space-y-3">
-            {templates.map(template => (
-              <button 
+            {allTemplates.map((template) => (
+              <div
                 key={template.id}
-                className={`w-full text-left p-3 border rounded-md transition-all ${
-                  activeTemplate === template.id 
-                    ? 'border-gold bg-gold bg-opacity-5' 
+                className={`w-full text-left p-4 border rounded-md transition-all flex flex-col ${
+                  activeTemplate === template.id
+                    ? 'border-gold bg-gold bg-opacity-5'
                     : 'border-border hover:border-gold hover:bg-gold hover:bg-opacity-5'
                 }`}
-                onClick={() => setActiveTemplate(template.id)}
               >
-                <h3 className="font-medium">{template.name}</h3>
-                <p className="text-sm text-text-secondary mt-1 line-clamp-2">
-                  {template.content.split('\n\n')[0].replace('# ', '')}
+                <div className="flex items-start gap-2 mb-2">
+                  <FileText className="text-gold" size={20} />
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-lg">{template.name}</h3>
+                    {template.isCustom && (
+                      <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">Custom</span>
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-text-secondary mt-1 line-clamp-3 mb-3">
+                  {template.description}
                 </p>
-              </button>
+                <div className="flex items-center justify-end gap-2 mt-auto">
+                  <button
+                    className="btn-sm border border-border text-text-secondary hover:border-gold hover:text-gold px-3 py-1 text-xs"
+                    onClick={() => setActiveTemplate(template.id)}
+                  >
+                    Preview
+                  </button>
+                  <Link
+                    to={`/reports/new?template=${template.id}`}
+                    state={template.isCustom ? { 
+                      customTemplateContent: template.content, 
+                      customTemplatePlaceholders: template.placeholderKeys,
+                      customTemplateName: template.name 
+                    } : undefined}
+                    className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-3 py-1 text-xs flex items-center gap-1"
+                  >
+                    Use Template
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
           
@@ -276,21 +430,30 @@ Review Date: [DATE]`,
             <h3 className="font-medium mb-3">AI Writing Assistance</h3>
             <div className="space-y-3">
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Generate Present Levels Description</h3>
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} />
+                  <h3 className="text-sm">Generate Present Levels Description</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Based on assessment data and observations
                 </p>
               </button>
               
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Expand Goal Progress Notes</h3>
+                <div className="flex items-center gap-2">
+                  <MessageSquarePlus size={16} />
+                  <h3 className="text-sm">Expand Goal Progress Notes</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Turn brief notes into detailed progress descriptions
                 </p>
               </button>
               
               <button className="w-full text-left p-3 border border-border rounded-md hover:border-gold hover:bg-opacity-5 transition-all">
-                <h3 className="font-medium text-sm">Suggest Intervention Strategies</h3>
+                <div className="flex items-center gap-2">
+                  <Lightbulb size={16} />
+                  <h3 className="text-sm">Suggest Intervention Strategies</h3>
+                </div>
                 <p className="text-xs text-text-secondary mt-1">
                   Based on student needs and goals
                 </p>
@@ -303,6 +466,14 @@ Review Date: [DATE]`,
           </div>
         </div>
       </div>
+      
+      <TemplateEditorModal
+        isOpen={isTemplateEditorModalOpen}
+        onClose={() => setIsTemplateEditorModalOpen(false)}
+        initialContentHtml={newTemplateInitialContent}
+        initialName={newTemplateInitialName}
+        onSave={handleSaveCustomTemplate}
+      />
     </div>
   );
 };

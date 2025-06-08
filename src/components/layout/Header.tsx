@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, X, Monitor, Sun, Moon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 
 interface HeaderProps {
@@ -26,7 +27,13 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <h1 className="text-xl font-medium tracking-tight">IEP Case Manager</h1>
+        <Link to="/" className="flex items-center">
+          <img 
+            src={resolvedTheme === 'dark' ? '/bettersped_logow.png' : '/bettersped_logob.png'} 
+            alt="BetterSPED Logo"
+            className="h-8 w-auto" 
+          />
+        </Link>
       </div>
       
       <div className="flex items-center space-x-2">
