@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DurationSelectionModal from '../components/scheduling/DurationSelectionModal';
+import DaySlotsModal from '../components/scheduling/DaySlotsModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 
@@ -27,6 +28,10 @@ const Scheduling: React.FC = () => {
     commonSlots: AvailableSlot[];
     allSlots: AvailableSlot[];
   } | null>(null);
+
+  // State for expanded day view
+  const [expandedDay, setExpandedDay] = useState<Date | null>(null);
+  const [expandedDaySlots, setExpandedDaySlots] = useState<AvailableSlot[]>([]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -74,6 +79,13 @@ const Scheduling: React.FC = () => {
     setIsDurationModalOpen(true);
   };
 
+  const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
+    if (dayCommonSlots.length === 0) return;
+    
+    setExpandedDay(day);
+    setExpandedDaySlots(dayCommonSlots);
+  };
+
   const handleDurationSubmit = (durationMinutes: number) => {
     if (!currentMeetingProposal || !selectedSlot) return;
     
@@ -93,6 +105,8 @@ const Scheduling: React.FC = () => {
     setCurrentMeetingProposal(null);
     setSelectedSlot(null);
     setCalculatedAvailability(null);
+    setExpandedDay(null);
+    setExpandedDaySlots([]);
     setIsDurationModalOpen(false);
     setViewMode('initial'); // Return to initial view after scheduling
   };
@@ -101,6 +115,8 @@ const Scheduling: React.FC = () => {
     setViewMode('initial');
     setCurrentMeetingProposal(null);
     setCalculatedAvailability(null);
+    setExpandedDay(null);
+    setExpandedDaySlots([]);
     setIsNewMeetingModalOpen(true);
   };
 
@@ -258,7 +274,7 @@ const Scheduling: React.FC = () => {
                 </div>
               </div>
               <p className="text-text-secondary mt-2 text-sm">
-                Click on any teal time slot below to schedule this meeting.
+                Click on any day with teal availability to see all time slots for that day.
               </p>
             </div>
           </div>
@@ -311,6 +327,7 @@ const Scheduling: React.FC = () => {
               
               const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
               const isWeekend = getDay(day) === 0 || getDay(day) === 6;
+              const hasCommonSlots = dayCommonSlots.length > 0;
               
               return (
                 <div 
@@ -318,14 +335,15 @@ const Scheduling: React.FC = () => {
                   className={`h-32 p-1 border border-border rounded-md overflow-hidden transition-all ${
                     isPastDate || isWeekend
                       ? 'bg-bg-secondary bg-opacity-50' 
-                      : dayCommonSlots.length > 0 
-                        ? 'hover:border-teal' 
+                      : hasCommonSlots
+                        ? 'hover:border-teal cursor-pointer hover:bg-teal hover:bg-opacity-5' 
                         : ''
                   } ${
                     isToday(day) ? 'bg-teal bg-opacity-10 border-teal' : ''
                   }`}
+                  onClick={() => !isPastDate && !isWeekend && hasCommonSlots && handleDayClick(day, dayCommonSlots)}
                 >
-                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : ''}`}>
+                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : hasCommonSlots ? 'text-teal font-bold' : ''}`}>
                     {format(day, 'd')}
                   </div>
                   
@@ -338,27 +356,20 @@ const Scheduling: React.FC = () => {
                       </div>
                     ))}
                     
-                    {/* Show ONLY common available slots (Teal) */}
-                    {!isPastDate && !isWeekend && dayCommonSlots.slice(0, 4).map((slot, index) => (
-                      <button
-                        key={`common-${index}`}
-                        onClick={() => handleSlotClick(slot)}
-                        className="w-full text-xs p-1 bg-teal text-white rounded hover:bg-opacity-90 transition-colors font-medium"
-                        title={`Common availability - all ${currentMeetingProposal?.teamMemberIds?.length || 0} team members free`}
-                      >
-                        {formatTime(slot.startTime)}
-                      </button>
-                    ))}
-                    
-                    {/* Show overflow indicator for common slots only */}
-                    {!isPastDate && !isWeekend && dayCommonSlots.length > 4 && (
-                      <div className="text-xs text-teal text-center font-medium">
-                        +{dayCommonSlots.length - 4} more
+                    {/* Show common slots indicator */}
+                    {!isPastDate && !isWeekend && hasCommonSlots && (
+                      <div className="text-center">
+                        <div className="text-xs text-teal font-bold bg-teal bg-opacity-10 rounded px-1 py-0.5">
+                          {dayCommonSlots.length} slot{dayCommonSlots.length !== 1 ? 's' : ''}
+                        </div>
+                        <div className="text-[10px] text-teal mt-1">
+                          Click to view
+                        </div>
                       </div>
                     )}
                     
                     {/* Show message when no common slots but day is available */}
-                    {!isPastDate && !isWeekend && dayCommonSlots.length === 0 && dayMeetings.length === 0 && (
+                    {!isPastDate && !isWeekend && !hasCommonSlots && dayMeetings.length === 0 && (
                       <div className="text-xs text-text-secondary text-center py-2">
                         No common slots
                       </div>
@@ -402,9 +413,9 @@ const Scheduling: React.FC = () => {
             <div className="p-3 bg-bg-secondary rounded-md">
               <h3 className="font-medium mb-2">How to Schedule</h3>
               <ol className="space-y-2 text-text-secondary">
-                <li>1. <span className="text-teal font-medium">Teal slots</span> = Everyone is free</li>
-                <li>2. Click any teal slot to select duration</li>
-                <li>3. Confirm to schedule the meeting</li>
+                <li>1. <span className="text-teal font-medium">Click any day</span> with teal availability</li>
+                <li>2. <span className="text-teal font-medium">Select a time slot</span> from the list</li>
+                <li>3. Choose duration and confirm</li>
               </ol>
             </div>
             
@@ -462,6 +473,17 @@ const Scheduling: React.FC = () => {
         onClose={() => setIsNewMeetingModalOpen(false)}
         onScheduleMeeting={handleScheduleMeeting}
         initialProposal={currentMeetingProposal}
+      />
+
+      <DaySlotsModal
+        isOpen={expandedDay !== null}
+        onClose={() => {
+          setExpandedDay(null);
+          setExpandedDaySlots([]);
+        }}
+        day={expandedDay}
+        commonSlotsForDay={expandedDaySlots}
+        onSlotSelect={handleSlotClick}
       />
 
       <DurationSelectionModal
