@@ -197,7 +197,19 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
                 <button onClick={() => setIsDefinePlaceholderModalOpen(false)} className="btn border border-border">Cancel</button>
                 <button 
                   onClick={handleAddPlaceholderToListAndEditor}
-                  className="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium rounded-md"
+                  // className="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium rounded-md" // Comment out or remove className for this test
+                  style={{
+                    backgroundColor: 'red', // Very visible background
+                    color: 'white',         // Contrasting text
+                    padding: '8px 16px',    // Ensure it has dimensions
+                    border: '2px solid yellow', // Visible border
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    borderRadius: '0.375rem',
+                    opacity: 1,             // Ensure full opacity
+                    visibility: 'visible',  // Ensure it's visible
+                    display: 'inline-block' // Ensure it's displayed
+                  }}
                   disabled={!currentPlaceholderName.trim()}
                 >
                   Save & Insert Placeholder
