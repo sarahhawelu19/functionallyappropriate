@@ -67,12 +67,20 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
 
     const editor = quillRef.current?.getEditor();
     if (editor) {
-      const range = editor.getSelection(true); // Get current selection or cursor position
-      const positionToInsert = range ? range.index : editor.getLength(); // Insert at cursor or end
+      const range = editor.getSelection(true); // Get current selection (or cursor position if no selection)
+      const placeholderTag = `[${placeholderKey}]`;
       
-      editor.insertText(positionToInsert, `[${placeholderKey}]`);
-      // Optionally, move cursor after inserted text
-      editor.setSelection(positionToInsert + `[${placeholderKey}]`.length, 0);
+      if (range && range.length > 0) {
+        // If text is selected, delete it first
+        editor.deleteText(range.index, range.length, 'user');
+        editor.insertText(range.index, placeholderTag, 'user');
+        editor.setSelection(range.index + placeholderTag.length, 0, 'user'); // Move cursor after inserted text
+      } else {
+        // If no text is selected, insert at cursor (or end of document)
+        const positionToInsert = range ? range.index : editor.getLength();
+        editor.insertText(positionToInsert, placeholderTag, 'user');
+        editor.setSelection(positionToInsert + placeholderTag.length, 0, 'user'); // Move cursor after inserted text
+      }
     }
 
     setCurrentPlaceholderName('');
@@ -189,7 +197,7 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
                 <button onClick={() => setIsDefinePlaceholderModalOpen(false)} className="btn border border-border">Cancel</button>
                 <button 
                   onClick={handleAddPlaceholderToListAndEditor}
-                  className="btn bg-green-500 hover:bg-green-600 text-white"
+                  className="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium rounded-md"
                   disabled={!currentPlaceholderName.trim()}
                 >
                   Save & Insert Placeholder
