@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useMeetings } from '../context/MeetingsContext';
 import { mockTeamMembers, MeetingParticipantRSVP } from '../data/schedulingMockData';
+import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetailsModal';
 
 const MyMeetingsPage: React.FC = () => {
   // Simulate current user - can be changed to test different perspectives
@@ -14,6 +15,9 @@ const MyMeetingsPage: React.FC = () => {
   const { iepMeetings, updateMeetingRSVP, setIepMeetings, setEditingMeetingId } = useMeetings();
   const [declineNote, setDeclineNote] = useState('');
   const [showDeclineModal, setShowDeclineModal] = useState<string | null>(null);
+  
+  // NEW: State for ViewMeetingDetailsModal
+  const [viewingMeeting, setViewingMeeting] = useState<any | null>(null);
 
   // Filter meetings where current user is a participant (either organizer or invitee)
   const myMeetings = iepMeetings.filter(meeting => 
@@ -108,6 +112,39 @@ const MyMeetingsPage: React.FC = () => {
     }
   };
 
+  // NEW: Handle meeting card click to open details modal
+  const handleMeetingClick = (meeting: any) => {
+    setViewingMeeting(meeting);
+  };
+
+  // NEW: ViewMeetingDetailsModal handlers
+  const handleEditFromModal = (meeting: any) => {
+    setEditingMeetingId(meeting.id);
+    navigate('/scheduling');
+  };
+
+  const handleCancelFromModal = (meetingId: string) => {
+    setIepMeetings(prevMeetings => 
+      prevMeetings.map(meeting => 
+        meeting.id === meetingId 
+          ? { ...meeting, status: 'cancelled' as const }
+          : meeting
+      )
+    );
+  };
+
+  const handleAcceptFromModal = (meetingId: string) => {
+    updateMeetingRSVP(meetingId, currentUserId, 'Accepted');
+  };
+
+  const handleDeclineFromModal = (meetingId: string) => {
+    updateMeetingRSVP(meetingId, currentUserId, 'Declined');
+  };
+
+  const handleProposeFromModal = (meeting: any) => {
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+  };
+
   const getOtherParticipants = (meeting: any) => {
     return meeting.teamMemberIds
       .filter((id: string) => id !== currentUserId)
@@ -154,7 +191,11 @@ const MyMeetingsPage: React.FC = () => {
             const userIsOrganizer = isOrganizer(meeting);
             
             return (
-              <div key={meeting.id} className={`card border-l-4 ${userIsOrganizer ? 'border-l-gold' : 'border-l-teal'}`}>
+              <div 
+                key={meeting.id} 
+                className={`card border-l-4 ${userIsOrganizer ? 'border-l-gold' : 'border-l-teal'} cursor-pointer hover:shadow-lg transition-all`}
+                onClick={() => handleMeetingClick(meeting)}
+              >
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                   {/* Meeting Details */}
                   <div className="flex-1">
@@ -215,26 +256,6 @@ const MyMeetingsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Other Participants */}
-                    <div className="mb-4">
-                      <h4 className="font-medium mb-2">
-                        {userIsOrganizer ? 'Invited Participants:' : 'Other Participants:'}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {otherParticipants.map(participant => {
-                          const participantRSVP = meeting.participants?.find((p: MeetingParticipantRSVP) => p.teamMemberId === participant.id);
-                          return (
-                            <span key={participant.id} className={`px-2 py-1 rounded-md text-sm flex items-center gap-1 ${
-                              userIsOrganizer ? getStatusColor(participantRSVP?.status || 'Pending') : 'bg-bg-secondary'
-                            }`}>
-                              {userIsOrganizer && getStatusIcon(participantRSVP?.status || 'Pending')}
-                              {participant.name} ({participant.role})
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-
                     {/* Response Summary - Always Prominent */}
                     <div className="mb-4 p-4 bg-bg-secondary rounded-md">
                       <h4 className="font-medium mb-3">
@@ -274,113 +295,9 @@ const MyMeetingsPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Show decline note if user declined */}
-                    {!userIsOrganizer && rsvpStatus?.status === 'Declined' && rsvpStatus.note && (
-                      <div className="mb-4 p-3 bg-red-500 bg-opacity-10 border border-red-500 rounded-md">
-                        <h4 className="font-medium text-red-500 mb-1">Your Decline Reason:</h4>
-                        <p className="text-sm">{rsvpStatus.note}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions Panel - Different for Organizer vs Invitee */}
-                  <div className="lg:w-64 flex-shrink-0">
-                    <div className="bg-bg-secondary p-4 rounded-md">
-                      {userIsOrganizer ? (
-                        // Organizer Actions
-                        <div>
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <Crown className="text-gold\" size={16} />
-                            Meeting Actions:
-                          </h4>
-                          
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => handleEditMeeting(meeting)}
-                              className="w-full btn border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center justify-center gap-2"
-                            >
-                              <Edit size={16} />
-                              Edit Meeting
-                            </button>
-                            
-                            <button
-                              onClick={() => handleCancelMeeting(meeting.id)}
-                              className="w-full btn border border-red-500 text-red-500 hover:bg-red-500 hover:bg-opacity-10 flex items-center justify-center gap-2"
-                            >
-                              <Trash2 size={16} />
-                              Cancel Meeting
-                            </button>
-                          </div>
-
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <h5 className="text-sm font-medium mb-2">You organized this meeting</h5>
-                            <p className="text-xs text-text-secondary">
-                              Monitor team responses above and manage meeting details using the action buttons.
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        // Invitee RSVP Actions
-                        <div>
-                          <h4 className="font-medium mb-3">Your Response:</h4>
-                          
-                          {rsvpStatus?.status === 'Pending' ? (
-                            <div className="space-y-2">
-                              <button
-                                onClick={() => handleAccept(meeting.id)}
-                                className="w-full btn bg-green text-white hover:bg-opacity-90 flex items-center justify-center gap-2"
-                              >
-                                <Check size={16} />
-                                Accept
-                              </button>
-                              
-                              <button
-                                onClick={() => handleDecline(meeting.id)}
-                                className="w-full btn border border-red-500 text-red-500 hover:bg-red-500 hover:bg-opacity-10 flex items-center justify-center gap-2"
-                              >
-                                <X size={16} />
-                                Decline
-                              </button>
-                              
-                              <button
-                                onClick={() => handleProposeNewTime(meeting.id)}
-                                className="w-full btn border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center justify-center gap-2"
-                              >
-                                <Clock size={16} />
-                                Propose New Time
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="text-center">
-                              <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-md ${getStatusColor(rsvpStatus?.status || 'Pending')}`}>
-                                {getStatusIcon(rsvpStatus?.status || 'Pending')}
-                                <span className="font-medium">{rsvpStatus?.status}</span>
-                              </div>
-                              
-                              {rsvpStatus?.respondedAt && (
-                                <p className="text-xs text-text-secondary mt-2">
-                                  Responded: {format(new Date(rsvpStatus.respondedAt), 'MMM d, yyyy h:mm a')}
-                                </p>
-                              )}
-                              
-                              <div className="mt-3 space-y-1">
-                                <button
-                                  onClick={() => handleAccept(meeting.id)}
-                                  className="w-full btn-sm border border-border text-text-secondary hover:border-green hover:text-green text-xs"
-                                >
-                                  Change to Accept
-                                </button>
-                                <button
-                                  onClick={() => handleDecline(meeting.id)}
-                                  className="w-full btn-sm border border-border text-text-secondary hover:border-red-500 hover:text-red-500 text-xs"
-                                >
-                                  Change to Decline
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                    {/* Click to view details hint */}
+                    <div className="text-sm text-teal hover:underline">
+                      Click to view full details and take actions →
                     </div>
                   </div>
                 </div>
@@ -449,6 +366,19 @@ const MyMeetingsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ViewMeetingDetailsModal */}
+      <ViewMeetingDetailsModal
+        isOpen={viewingMeeting !== null}
+        onClose={() => setViewingMeeting(null)}
+        meeting={viewingMeeting}
+        currentUserId={currentUserId}
+        onEdit={handleEditFromModal}
+        onCancelMeeting={handleCancelFromModal}
+        onAccept={handleAcceptFromModal}
+        onDecline={handleDeclineFromModal}
+        onProposeNewTime={handleProposeFromModal}
+      />
     </div>
   );
 };

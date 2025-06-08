@@ -4,6 +4,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DaySlotsModal from '../components/scheduling/DaySlotsModal';
 import MeetingConfirmationModal from '../components/scheduling/MeetingConfirmationModal';
+import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetailsModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 import { useMeetings } from '../context/MeetingsContext';
@@ -13,7 +14,7 @@ type ViewMode = 'initial' | 'availability';
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const { iepMeetings, addMeeting, updateMeeting, editingMeetingId, setEditingMeetingId } = useMeetings(); // Use context
+  const { iepMeetings, addMeeting, updateMeeting, updateMeetingRSVP, editingMeetingId, setEditingMeetingId, setIepMeetings } = useMeetings(); // Use context
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [calculatedAvailability, setCalculatedAvailability] = useState<{
@@ -30,6 +31,10 @@ const Scheduling: React.FC = () => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmedMeetingDetails, setConfirmedMeetingDetails] = useState<IEPMeeting | null>(null);
   const [isEditMode, setIsEditMode] = useState(false); // NEW: Track if we're editing
+
+  // NEW: State for ViewMeetingDetailsModal
+  const [viewingMeeting, setViewingMeeting] = useState<IEPMeeting | null>(null);
+  const currentUserId = 'tm1'; // Sarah Miller (Case Manager) - hardcoded for this context
 
   // NEW: Effect to handle edit mode when component loads
   useEffect(() => {
@@ -202,6 +207,39 @@ const Scheduling: React.FC = () => {
     }
   };
 
+  // NEW: Handle meeting click in upcoming events
+  const handleMeetingClick = (meeting: IEPMeeting) => {
+    setViewingMeeting(meeting);
+  };
+
+  // NEW: ViewMeetingDetailsModal handlers
+  const handleEditFromModal = (meeting: IEPMeeting) => {
+    setEditingMeetingId(meeting.id);
+    // The useEffect will handle opening the edit modal
+  };
+
+  const handleCancelFromModal = (meetingId: string) => {
+    setIepMeetings(prevMeetings => 
+      prevMeetings.map(meeting => 
+        meeting.id === meetingId 
+          ? { ...meeting, status: 'cancelled' as const }
+          : meeting
+      )
+    );
+  };
+
+  const handleAcceptFromModal = (meetingId: string) => {
+    updateMeetingRSVP(meetingId, currentUserId, 'Accepted');
+  };
+
+  const handleDeclineFromModal = (meetingId: string) => {
+    updateMeetingRSVP(meetingId, currentUserId, 'Declined');
+  };
+
+  const handleProposeFromModal = (meeting: IEPMeeting) => {
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+  };
+
   const getTeamMemberNames = (teamMemberIds: string[]) => {
     return teamMemberIds
       .map(id => mockTeamMembers.find(member => member.id === id)?.name)
@@ -280,7 +318,11 @@ const Scheduling: React.FC = () => {
                   .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())
                   .slice(0, 5)
                   .map(meeting => (
-                    <div key={meeting.id} className="p-3 border border-border rounded-md hover:border-teal transition-all">
+                    <div 
+                      key={meeting.id} 
+                      className="p-3 border border-border rounded-md hover:border-teal transition-all cursor-pointer"
+                      onClick={() => handleMeetingClick(meeting)}
+                    >
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium">{meeting.studentName}</h3>
                         <span className="text-sm bg-teal text-white px-2 py-0.5 rounded">
@@ -292,6 +334,9 @@ const Scheduling: React.FC = () => {
                       </p>
                       <p className="text-xs text-text-secondary mt-1">
                         Duration: {meeting.durationMinutes} minutes
+                      </p>
+                      <p className="text-xs text-teal mt-1 hover:underline">
+                        Click to view details
                       </p>
                     </div>
                   ))}
@@ -322,6 +367,19 @@ const Scheduling: React.FC = () => {
           onClose={handleConfirmationClose}
           onSendInvitations={handleSendInvitations}
           meeting={confirmedMeetingDetails}
+          isEditMode={isEditMode}
+        />
+
+        <ViewMeetingDetailsModal
+          isOpen={viewingMeeting !== null}
+          onClose={() => setViewingMeeting(null)}
+          meeting={viewingMeeting}
+          currentUserId={currentUserId}
+          onEdit={handleEditFromModal}
+          onCancelMeeting={handleCancelFromModal}
+          onAccept={handleAcceptFromModal}
+          onDecline={handleDeclineFromModal}
+          onProposeNewTime={handleProposeFromModal}
         />
       </div>
     );
@@ -611,6 +669,19 @@ const Scheduling: React.FC = () => {
         onClose={handleConfirmationClose}
         onSendInvitations={handleSendInvitations}
         meeting={confirmedMeetingDetails}
+        isEditMode={isEditMode}
+      />
+
+      <ViewMeetingDetailsModal
+        isOpen={viewingMeeting !== null}
+        onClose={() => setViewingMeeting(null)}
+        meeting={viewingMeeting}
+        currentUserId={currentUserId}
+        onEdit={handleEditFromModal}
+        onCancelMeeting={handleCancelFromModal}
+        onAccept={handleAcceptFromModal}
+        onDecline={handleDeclineFromModal}
+        onProposeNewTime={handleProposeFromModal}
       />
     </div>
   );
