@@ -125,44 +125,49 @@ const TemplateEditorModal: React.FC<TemplateEditorModalProps> = ({
           />
         </div>
 
-        <div className="mb-4 flex-grow min-h-[400px] flex flex-col quill-editor-wrapper"> 
-          <label className="block text-sm font-medium mb-1 text-text-secondary">Template Content:</label>
-          <ReactQuill 
-            ref={quillRef}
-            theme="snow" 
-            value={editorHtml} 
-            onChange={setEditorHtml} 
-            modules={modules}
-            formats={formats}
-            className="flex-grow quill-editor-container"
-          />
-        </div>
-        
-        <div className="mb-4 p-3 border-t border-b border-border">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-md font-semibold text-text-primary">Manage Placeholders</h4>
-            <button 
-              onClick={() => {
-                setCurrentPlaceholderName(''); // Reset for new placeholder
-                setIsDefinePlaceholderModalOpen(true);
-              }}
-              className="btn-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs"
-            >
-              Add Placeholder
-            </button>
+        {/* NEW WRAPPER for scrollable middle content */}
+        <div className="flex-grow overflow-y-auto mb-4 pr-2"> {/* pr-2 for scrollbar space */}
+          
+          <div className="mb-4 flex-grow min-h-[400px] flex flex-col quill-editor-wrapper"> 
+            <label className="block text-sm font-medium mb-1 text-text-secondary">Template Content:</label>
+            <ReactQuill 
+              ref={quillRef}
+              theme="snow" 
+              value={editorHtml} 
+              onChange={setEditorHtml} 
+              modules={modules}
+              formats={formats}
+              className="flex-grow quill-editor-container"
+            />
           </div>
-          {definedPlaceholders.length > 0 ? (
-            <ul className="list-disc list-inside pl-1 text-sm text-text-secondary max-h-24 overflow-y-auto">
-              {definedPlaceholders.map(p => (
-                <li key={p.key}><strong>{p.name}</strong> (Key: <code>[{p.key}]</code>)</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-text-secondary italic">No placeholders defined yet. Click "Add Placeholder" to create one and insert it into your template content.</p>
-          )}
-        </div>
+          
+          <div className="p-3 border-t border-b border-border"> {/* Removed mb-4 from here, parent wrapper has it */}
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-md font-semibold text-text-primary">Manage Placeholders</h4>
+              <button 
+                onClick={() => {
+                  setCurrentPlaceholderName(''); // Reset for new placeholder
+                  setIsDefinePlaceholderModalOpen(true);
+                }}
+                className="btn-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs"
+              >
+                Add Placeholder
+              </button>
+            </div>
+            {definedPlaceholders.length > 0 ? (
+              <ul className="list-disc list-inside pl-1 text-sm text-text-secondary max-h-20 overflow-y-auto"> {/* Reduced max-h-24 to max-h-20 (5rem) */}
+                {definedPlaceholders.map(p => (
+                  <li key={p.key}><strong>{p.name}</strong> (Key: <code>[{p.key}]</code>)</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-text-secondary italic">No placeholders defined yet. Click "Add Placeholder" to create one and insert it into your template content.</p>
+            )}
+          </div>
 
-        <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-border">
+        </div> {/* END OF NEW WRAPPER for scrollable middle content */}
+
+        <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-border"> {/* Action Buttons - fixed size */}
           <button onClick={onClose} className="btn border border-gray-300 hover:bg-gray-100 text-gray-700">
             Cancel
           </button>
