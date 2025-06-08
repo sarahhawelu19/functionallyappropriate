@@ -25,12 +25,22 @@ const DaySlotsModal: React.FC<DaySlotsModalProps> = ({
     return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
   };
 
+  const calculateDuration = (startTime: string, endTime: string): number => {
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    return endMinutes - startMinutes;
+  };
+
   const handleSlotClick = (slot: AvailableSlot) => {
     onSlotSelect(slot);
     onClose();
   };
 
   if (!isOpen || !day) return null;
+
+  const duration = commonSlotsForDay.length > 0 ? calculateDuration(commonSlotsForDay[0].startTime, commonSlotsForDay[0].endTime) : 0;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -41,7 +51,7 @@ const DaySlotsModal: React.FC<DaySlotsModalProps> = ({
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center gap-2">
               <Calendar className="text-teal" size={24} />
-              <h2 className="text-xl font-medium">Available Time Slots</h2>
+              <h2 className="text-xl font-medium">Available {duration}-Minute Slots</h2>
             </div>
             <button
               onClick={onClose}
@@ -63,14 +73,14 @@ const DaySlotsModal: React.FC<DaySlotsModalProps> = ({
                 {format(day, 'EEEE, MMMM d, yyyy')}
               </div>
               <div className="text-sm text-text-secondary mt-1">
-                {commonSlotsForDay.length} common time slots available
+                {commonSlotsForDay.length} available {duration}-minute slot{commonSlotsForDay.length !== 1 ? 's' : ''}
               </div>
             </div>
 
             {/* Time Slots List */}
             <div className="space-y-3 max-h-96 overflow-y-auto">
               <h3 className="font-medium text-sm text-text-secondary uppercase tracking-wide">
-                Select a Time Slot
+                Select a {duration}-Minute Time Slot
               </h3>
               
               {commonSlotsForDay.length > 0 ? (
@@ -90,7 +100,7 @@ const DaySlotsModal: React.FC<DaySlotsModalProps> = ({
                             {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                           </div>
                           <div className="text-sm text-text-secondary">
-                            30-minute slot • All team members available
+                            {duration}-minute meeting • All team members available
                           </div>
                         </div>
                       </div>
@@ -103,7 +113,7 @@ const DaySlotsModal: React.FC<DaySlotsModalProps> = ({
               ) : (
                 <div className="text-center py-8 text-text-secondary">
                   <Clock size={40} className="mx-auto mb-2 opacity-30" />
-                  <p>No common time slots available for this day</p>
+                  <p>No {duration}-minute slots available for this day</p>
                 </div>
               )}
             </div>

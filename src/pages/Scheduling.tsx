@@ -2,27 +2,18 @@ import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft, Eye } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
-import DurationSelectionModal from '../components/scheduling/DurationSelectionModal';
 import DaySlotsModal from '../components/scheduling/DaySlotsModal';
 import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 
 type ViewMode = 'initial' | 'availability';
 
-interface CommonAvailableSlot {
-  date: string; // "YYYY-MM-DD"
-  startTime: string; // "HH:MM" (e.g., "09:00")
-  endTime: string; // "HH:MM" (e.g., "11:30")
-}
-
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const [isDurationModalOpen, setIsDurationModalOpen] = useState(false);
   const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<CommonAvailableSlot | null>(null);
   const [calculatedAvailability, setCalculatedAvailability] = useState<{
     individualAvailability: any[];
     commonSlots: AvailableSlot[];
@@ -50,15 +41,16 @@ const Scheduling: React.FC = () => {
     console.log('Meeting proposal received:', meetingDetails);
     setCurrentMeetingProposal(meetingDetails);
     
-    // Calculate availability for selected team members
-    if (meetingDetails.teamMemberIds && meetingDetails.teamMemberIds.length > 0) {
+    // Calculate availability for selected team members with desired duration
+    if (meetingDetails.teamMemberIds && meetingDetails.teamMemberIds.length > 0 && meetingDetails.durationMinutes) {
       const startDate = new Date();
       const endDate = addDays(startDate, 90); // Calculate 3 months ahead
       
       const availability = calculateTeamAvailability(
         meetingDetails.teamMemberIds,
         startDate,
-        endDate
+        endDate,
+        meetingDetails.durationMinutes
       );
       
       setCalculatedAvailability(availability);
@@ -70,31 +62,14 @@ const Scheduling: React.FC = () => {
   };
 
   const handleSlotClick = (slot: AvailableSlot) => {
-    const commonSlot: CommonAvailableSlot = {
-      date: slot.date,
-      startTime: slot.startTime,
-      endTime: slot.endTime
-    };
-    setSelectedSlot(commonSlot);
-    setIsDurationModalOpen(true);
-  };
-
-  const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
-    if (dayCommonSlots.length === 0) return;
+    if (!currentMeetingProposal) return;
     
-    setExpandedDay(day);
-    setExpandedDaySlots(dayCommonSlots);
-  };
-
-  const handleDurationSubmit = (durationMinutes: number) => {
-    if (!currentMeetingProposal || !selectedSlot) return;
-    
-    // Create final meeting object
+    // Create final meeting object directly
     const finalMeeting: IEPMeeting = {
       ...currentMeetingProposal,
-      date: selectedSlot.date,
-      time: selectedSlot.startTime,
-      durationMinutes: durationMinutes,
+      date: slot.date,
+      time: slot.startTime,
+      durationMinutes: currentMeetingProposal.durationMinutes!,
       status: 'scheduled',
     } as IEPMeeting;
     
@@ -103,12 +78,17 @@ const Scheduling: React.FC = () => {
     
     // Clear states after successful scheduling
     setCurrentMeetingProposal(null);
-    setSelectedSlot(null);
     setCalculatedAvailability(null);
     setExpandedDay(null);
     setExpandedDaySlots([]);
-    setIsDurationModalOpen(false);
     setViewMode('initial'); // Return to initial view after scheduling
+  };
+
+  const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
+    if (dayCommonSlots.length === 0) return;
+    
+    setExpandedDay(day);
+    setExpandedDaySlots(dayCommonSlots);
   };
 
   const handleBackToInitial = () => {
@@ -162,8 +142,8 @@ const Scheduling: React.FC = () => {
               <CalendarIcon className="text-teal mx-auto mb-4" size={64} />
               <h2 className="text-2xl font-medium mb-4">Schedule IEP Meetings</h2>
               <p className="text-text-secondary mb-8 max-w-md mx-auto">
-                Select your team members and we'll calculate everyone's availability, 
-                highlighting common free times for easy scheduling.
+                Select your team members, meeting duration, and we'll show you exactly when 
+                everyone is available for that specific time block.
               </p>
               
               <button 
@@ -201,6 +181,9 @@ const Scheduling: React.FC = () => {
                       </div>
                       <p className="text-sm text-text-secondary mt-1">
                         {meeting.time && formatTime(meeting.time)} - {meeting.meetingType}
+                      </p>
+                      <p className="text-xs text-text-secondary mt-1">
+                        Duration: {meeting.durationMinutes} minutes
                       </p>
                     </div>
                   ))}
@@ -243,7 +226,7 @@ const Scheduling: React.FC = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 className="text-2xl font-medium">Common Team Availability</h1>
+          <h1 className="text-2xl font-medium">Available {currentMeetingProposal?.durationMinutes}-Minute Slots</h1>
         </div>
       </div>
 
@@ -258,10 +241,13 @@ const Scheduling: React.FC = () => {
               <h3 className="font-medium text-lg mb-2">
                 {currentMeetingProposal.meetingType} for {currentMeetingProposal.studentName}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Meeting Type:</span> {currentMeetingProposal.meetingType}
                   {currentMeetingProposal.customMeetingType && ` (${currentMeetingProposal.customMeetingType})`}
+                </div>
+                <div>
+                  <span className="font-medium">Duration:</span> {currentMeetingProposal.durationMinutes} minutes
                 </div>
                 <div>
                   <span className="font-medium">Team Members:</span> {getTeamMemberNames(currentMeetingProposal.teamMemberIds || [])}
@@ -270,11 +256,11 @@ const Scheduling: React.FC = () => {
               <div className="mt-3 flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-teal rounded"></div>
-                  <span>Teal slots = All {currentMeetingProposal.teamMemberIds?.length || 0} members available</span>
+                  <span>Teal slots = {currentMeetingProposal.durationMinutes}-minute blocks where all {currentMeetingProposal.teamMemberIds?.length || 0} members are available</span>
                 </div>
               </div>
               <p className="text-text-secondary mt-2 text-sm">
-                Click on any day with teal availability to see all time slots for that day.
+                Click on any day with teal availability to see all {currentMeetingProposal.durationMinutes}-minute time slots for that day.
               </p>
             </div>
           </div>
@@ -363,7 +349,7 @@ const Scheduling: React.FC = () => {
                           {dayCommonSlots.length} slot{dayCommonSlots.length !== 1 ? 's' : ''}
                         </div>
                         <div className="text-[10px] text-teal mt-1">
-                          Click to view
+                          {currentMeetingProposal?.durationMinutes}min blocks
                         </div>
                       </div>
                     )}
@@ -371,7 +357,7 @@ const Scheduling: React.FC = () => {
                     {/* Show message when no common slots but day is available */}
                     {!isPastDate && !isWeekend && !hasCommonSlots && dayMeetings.length === 0 && (
                       <div className="text-xs text-text-secondary text-center py-2">
-                        No common slots
+                        No {currentMeetingProposal?.durationMinutes}min slots
                       </div>
                     )}
                   </div>
@@ -389,7 +375,7 @@ const Scheduling: React.FC = () => {
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="text-teal" size={20} />
-            <h2 className="text-xl font-medium">Common Availability</h2>
+            <h2 className="text-xl font-medium">{currentMeetingProposal?.durationMinutes}-Min Availability</h2>
           </div>
           
           <div className="space-y-4 text-sm">
@@ -399,12 +385,16 @@ const Scheduling: React.FC = () => {
                 <h3 className="font-medium mb-2">This Month</h3>
                 <div className="space-y-2 text-text-secondary">
                   <div className="flex justify-between">
-                    <span>Common slots found:</span>
+                    <span>{currentMeetingProposal?.durationMinutes}-min slots found:</span>
                     <span className="font-medium text-teal">{monthCommonSlots.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Team members:</span>
                     <span className="font-medium">{currentMeetingProposal?.teamMemberIds?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Meeting duration:</span>
+                    <span className="font-medium">{currentMeetingProposal?.durationMinutes} minutes</span>
                   </div>
                 </div>
               </div>
@@ -414,8 +404,8 @@ const Scheduling: React.FC = () => {
               <h3 className="font-medium mb-2">How to Schedule</h3>
               <ol className="space-y-2 text-text-secondary">
                 <li>1. <span className="text-teal font-medium">Click any day</span> with teal availability</li>
-                <li>2. <span className="text-teal font-medium">Select a time slot</span> from the list</li>
-                <li>3. Choose duration and confirm</li>
+                <li>2. <span className="text-teal font-medium">Select a {currentMeetingProposal?.durationMinutes}-minute slot</span> from the list</li>
+                <li>3. Meeting is immediately scheduled!</li>
               </ol>
             </div>
             
@@ -424,7 +414,7 @@ const Scheduling: React.FC = () => {
               <div className="mt-6">
                 <h3 className="font-medium mb-3 flex items-center gap-2">
                   <Eye size={16} />
-                  Next Common Slots
+                  Next Available Slots
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {monthCommonSlots
@@ -442,7 +432,7 @@ const Scheduling: React.FC = () => {
                           {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                         </div>
                         <div className="text-teal text-[10px]">
-                          All {currentMeetingProposal?.teamMemberIds?.length || 0} members available
+                          {currentMeetingProposal?.durationMinutes}-min block • All {currentMeetingProposal?.teamMemberIds?.length || 0} members available
                         </div>
                       </button>
                     ))}
@@ -451,15 +441,15 @@ const Scheduling: React.FC = () => {
             ) : (
               <div className="mt-6 p-4 bg-bg-secondary rounded-md text-center">
                 <Clock className="text-text-secondary mx-auto mb-2" size={24} />
-                <h3 className="font-medium mb-1">No Common Slots</h3>
+                <h3 className="font-medium mb-1">No {currentMeetingProposal?.durationMinutes}-Minute Slots</h3>
                 <p className="text-xs text-text-secondary">
-                  No times found when all {currentMeetingProposal?.teamMemberIds?.length || 0} team members are available this month.
+                  No {currentMeetingProposal?.durationMinutes}-minute blocks found when all {currentMeetingProposal?.teamMemberIds?.length || 0} team members are available this month.
                 </p>
                 <button 
                   onClick={handleBackToInitial}
                   className="mt-3 text-xs text-teal hover:underline"
                 >
-                  Try different team members
+                  Try different duration or team members
                 </button>
               </div>
             )}
@@ -484,13 +474,6 @@ const Scheduling: React.FC = () => {
         day={expandedDay}
         commonSlotsForDay={expandedDaySlots}
         onSlotSelect={handleSlotClick}
-      />
-
-      <DurationSelectionModal
-        isOpen={isDurationModalOpen}
-        onClose={() => setIsDurationModalOpen(false)}
-        onSubmitDuration={handleDurationSubmit}
-        selectedSlot={selectedSlot}
       />
     </div>
   );

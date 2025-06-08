@@ -96,11 +96,96 @@ const generateMemberSlotsForDate = (member: TeamMember, date: string): { startTi
   return slots;
 };
 
+// Find contiguous blocks of common availability that fit the desired duration
+const findDurationSpecificSlots = (
+  commonSlots: AvailableSlot[],
+  desiredDurationMinutes: number
+): AvailableSlot[] => {
+  const durationSpecificSlots: AvailableSlot[] = [];
+  
+  // Group slots by date
+  const slotsByDate = new Map<string, AvailableSlot[]>();
+  commonSlots.forEach(slot => {
+    if (!slotsByDate.has(slot.date)) {
+      slotsByDate.set(slot.date, []);
+    }
+    slotsByDate.get(slot.date)!.push(slot);
+  });
+  
+  // For each date, find contiguous blocks that can accommodate the desired duration
+  slotsByDate.forEach((daySlots, date) => {
+    // Sort slots by start time
+    const sortedSlots = daySlots.sort((a, b) => 
+      timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+    );
+    
+    // Find contiguous blocks
+    const blocks: AvailableSlot[][] = [];
+    let currentBlock: AvailableSlot[] = [];
+    
+    for (const slot of sortedSlots) {
+      if (currentBlock.length === 0) {
+        currentBlock = [slot];
+      } else {
+        const lastSlot = currentBlock[currentBlock.length - 1];
+        const lastEndTime = timeToMinutes(lastSlot.endTime);
+        const currentStartTime = timeToMinutes(slot.startTime);
+        
+        // If slots are contiguous (no gap), add to current block
+        if (currentStartTime === lastEndTime) {
+          currentBlock.push(slot);
+        } else {
+          // Gap found, save current block and start new one
+          if (currentBlock.length > 0) {
+            blocks.push([...currentBlock]);
+          }
+          currentBlock = [slot];
+        }
+      }
+    }
+    
+    // Don't forget the last block
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock);
+    }
+    
+    // For each block, generate possible start times for the desired duration
+    blocks.forEach(block => {
+      if (block.length === 0) return;
+      
+      const blockStartTime = timeToMinutes(block[0].startTime);
+      const blockEndTime = timeToMinutes(block[block.length - 1].endTime);
+      const blockDurationMinutes = blockEndTime - blockStartTime;
+      
+      // If block is long enough for the desired duration
+      if (blockDurationMinutes >= desiredDurationMinutes) {
+        // Generate possible start times (every 30 minutes)
+        let possibleStartTime = blockStartTime;
+        
+        while (possibleStartTime + desiredDurationMinutes <= blockEndTime) {
+          durationSpecificSlots.push({
+            date: date,
+            startTime: minutesToTime(possibleStartTime),
+            endTime: minutesToTime(possibleStartTime + desiredDurationMinutes),
+            isCommon: true,
+            availableMembers: block[0].availableMembers // All members are available for common slots
+          });
+          
+          possibleStartTime += 30; // Move to next 30-minute increment
+        }
+      }
+    });
+  });
+  
+  return durationSpecificSlots;
+};
+
 // Calculate availability for selected team members over a date range
 export const calculateTeamAvailability = (
   teamMemberIds: string[],
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  desiredDurationMinutes: number = 30
 ): {
   individualAvailability: TeamMemberAvailability[];
   commonSlots: AvailableSlot[];
@@ -156,20 +241,23 @@ export const calculateTeamAvailability = (
     });
   }
   
-  // Convert map to array and determine common slots
+  // Convert map to array and determine common slots (30-minute base slots)
   const allSlots = Array.from(allSlotsMap.values());
-  const commonSlots = allSlots.filter(slot => 
+  const baseCommonSlots = allSlots.filter(slot => 
     slot.availableMembers.length === selectedMembers.length
   );
   
   // Mark common slots
-  commonSlots.forEach(slot => {
+  baseCommonSlots.forEach(slot => {
     slot.isCommon = true;
   });
   
+  // Generate duration-specific common slots
+  const durationSpecificCommonSlots = findDurationSpecificSlots(baseCommonSlots, desiredDurationMinutes);
+  
   return {
     individualAvailability,
-    commonSlots,
+    commonSlots: durationSpecificCommonSlots,
     allSlots
   };
 };

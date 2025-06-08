@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Calendar } from 'lucide-react';
+import { X, Users, Calendar, Clock } from 'lucide-react';
 import { TeamMember, MeetingType, IEPMeeting, mockTeamMembers, meetingTypes, StudentProfile, mockStudents } from '../../data/schedulingMockData';
 
 interface NewIEPMeetingModalProps {
@@ -19,6 +19,15 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
   const [meetingType, setMeetingType] = useState<MeetingType | ''>('');
   const [customType, setCustomType] = useState('');
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>([]);
+  const [desiredDurationMinutes, setDesiredDurationMinutes] = useState<number>(60);
+
+  const durationOptions = [
+    { value: 30, label: '30 minutes', description: 'Quick check-in or brief discussion' },
+    { value: 45, label: '45 minutes', description: 'Standard progress review' },
+    { value: 60, label: '60 minutes', description: 'Full IEP meeting (recommended)' },
+    { value: 90, label: '90 minutes', description: 'Comprehensive review or initial evaluation' },
+    { value: 120, label: '120 minutes', description: 'Extended meeting for complex cases' },
+  ];
 
   // Initialize form state from initialProposal when modal opens or proposal changes
   useEffect(() => {
@@ -27,12 +36,14 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
       setMeetingType(initialProposal.meetingType || '');
       setCustomType(initialProposal.customMeetingType || '');
       setSelectedTeamMembers(initialProposal.teamMemberIds || []);
+      setDesiredDurationMinutes(initialProposal.durationMinutes || 60);
     } else if (isOpen && !initialProposal) {
       // Reset to empty state if no proposal exists
       setSelectedStudentId('');
       setMeetingType('');
       setCustomType('');
       setSelectedTeamMembers([]);
+      setDesiredDurationMinutes(60);
     }
   }, [isOpen, initialProposal]);
 
@@ -58,6 +69,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
       meetingType: meetingType as MeetingType,
       customMeetingType: meetingType === 'Other' ? customType : undefined,
       teamMemberIds: selectedTeamMembers,
+      durationMinutes: desiredDurationMinutes,
       status: 'pending_scheduling',
       createdByUserId: 'currentUserPlaceholderId',
     };
@@ -73,6 +85,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
       setMeetingType('');
       setCustomType('');
       setSelectedTeamMembers([]);
+      setDesiredDurationMinutes(60);
     }
     onClose();
   };
@@ -157,6 +170,36 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
 
               <div>
                 <div className="flex items-center gap-2 mb-3">
+                  <Clock className="text-teal" size={20} />
+                  <label className="text-sm font-medium">Desired Meeting Duration</label>
+                </div>
+                <div className="space-y-2">
+                  {durationOptions.map(option => (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-3 p-3 border border-border rounded-md hover:border-teal transition-colors cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="duration"
+                        value={option.value}
+                        checked={desiredDurationMinutes === option.value}
+                        onChange={(e) => setDesiredDurationMinutes(Number(e.target.value))}
+                        className="text-teal focus:ring-teal"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-sm text-text-secondary">
+                          {option.description}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-3">
                   <Users className="text-teal" size={20} />
                   <h3 className="font-medium">Select Team Members</h3>
                 </div>
@@ -193,7 +236,7 @@ const NewIEPMeetingModal: React.FC<NewIEPMeetingModalProps> = ({
               <button
                 type="submit"
                 className="px-4 py-2 bg-teal text-white rounded-md hover:bg-opacity-90 transition-colors"
-                disabled={!selectedStudentId || !meetingType || (meetingType === 'Other' && !customType)}
+                disabled={!selectedStudentId || !meetingType || (meetingType === 'Other' && !customType) || selectedTeamMembers.length === 0}
               >
                 Next: View Availability
               </button>
