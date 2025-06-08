@@ -506,7 +506,7 @@ Examiner: [EXAMINER]
               {templateCategories.map((category) => (
                 <div key={category.categoryId} className="border border-border rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-3">
-                    {category.icon && <category.icon className="text-gold" size={20} />}
+                    {category.icon && <category.icon className="text-gold\" size={20} />}
                     <div>
                       <h3 className="font-medium">{category.categoryName}</h3>
                       <p className="text-sm text-text-secondary">{category.categoryDescription}</p>
