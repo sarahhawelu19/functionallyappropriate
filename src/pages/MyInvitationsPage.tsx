@@ -43,7 +43,7 @@ const MyInvitationsPage: React.FC = () => {
   const getStatusIcon = (status: MeetingParticipantRSVP['status']) => {
     switch (status) {
       case 'Accepted':
-        return <CheckCircle className="text-green" size={20} />;
+        return <CheckCircle className="text-green\" size={20} />;
       case 'Declined':
         return <XCircle className="text-red-500" size={20} />;
       case 'ProposedNewTime':
