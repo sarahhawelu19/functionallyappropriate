@@ -53,7 +53,7 @@ const MyMeetingsPage: React.FC = () => {
       case 'Declined':
         return <XCircle className="text-red-500\" size={20} />;
       case 'ProposedNewTime':
-        return <ClockIcon className="text-gold" size={20} />;
+        return <ClockIcon className="text-gold\" size={20} />;
       default:
         return <AlertCircle className="text-text-secondary" size={20} />;
     }
