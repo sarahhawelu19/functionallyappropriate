@@ -6,6 +6,16 @@ import { useReports } from '../context/ReportContext';
 import mammoth from 'mammoth';
 import TemplateEditorModal from '../components/modals/TemplateEditorModal';
 
+// Interface for template objects
+interface AppTemplate {
+  id: string;
+  name: string;
+  description: string;
+  content: string; // Can be Markdown for predefined, HTML for custom
+  isCustom?: boolean; // Flag to distinguish
+  placeholderKeys?: string[]; // For custom templates
+}
+
 const ReportDrafting: React.FC = () => {
   const { reports } = useReports();
   
@@ -15,37 +25,8 @@ const ReportDrafting: React.FC = () => {
   const [newTemplateInitialContent, setNewTemplateInitialContent] = useState(''); // Will store HTML
   const [newTemplateInitialName, setNewTemplateInitialName] = useState('');
   
-  const onDrop = React.useCallback(async (acceptedFiles: File[]) => { // Make async
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      if (file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer });
-          setNewTemplateInitialContent(result.value); // HTML string
-          setNewTemplateInitialName(file.name.replace(/\.docx$/, "")); // Remove .docx extension
-          setIsTemplateEditorModalOpen(true);
-        } catch (error) {
-          console.error("Error converting DOCX to HTML:", error);
-          alert("Could not process the DOCX file. It might be corrupted or an unsupported format.");
-        }
-      } else {
-        alert("Only .docx files are currently supported for creating custom templates.");
-      }
-    }
-  }, []); // No dependencies that would cause re-creation, setters are stable
-  
-  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
-    onDrop,
-    accept: {
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'application/pdf': ['.pdf'],
-      'text/plain': ['.txt']
-    },
-    multiple: false
-  });
-  
-  const templates = [
+  // Predefined templates with isCustom flag
+  const predefinedTemplates: AppTemplate[] = [
     { 
       id: 'academic-achievement',
       name: 'Academic Achievement Report',
@@ -95,6 +76,7 @@ const ReportDrafting: React.FC = () => {
 
         ## Recommendations
         [ACADEMIC RECOMMENDATIONS]`,
+      isCustom: false
     },
     {
       id: 'cognitive-processing',
@@ -145,6 +127,7 @@ const ReportDrafting: React.FC = () => {
 
         ## Recommendations
         [RECOMMENDATIONS BASED ON COGNITIVE PROFILE]`,
+      isCustom: false
     },
     {
       id: 'speech-language',
@@ -200,8 +183,42 @@ const ReportDrafting: React.FC = () => {
 
         ## Recommendations
         [THERAPY GOALS, CLASSROOM STRATEGIES, HOME SUGGESTIONS]`,
-     }
-   ];
+      isCustom: false
+    }
+  ];
+
+  // Manage all templates as state
+  const [allTemplates, setAllTemplates] = useState<AppTemplate[]>(predefinedTemplates);
+
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => { // Make async
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      if (file.name.endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
+          setNewTemplateInitialContent(result.value); // HTML string
+          setNewTemplateInitialName(file.name.replace(/\.docx$/, "")); // Remove .docx extension
+          setIsTemplateEditorModalOpen(true);
+        } catch (error) {
+          console.error("Error converting DOCX to HTML:", error);
+          alert("Could not process the DOCX file. It might be corrupted or an unsupported format.");
+        }
+      } else {
+        alert("Only .docx files are currently supported for creating custom templates.");
+      }
+    }
+  }, []); // No dependencies that would cause re-creation, setters are stable
+  
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt']
+    },
+    multiple: false
+  });
   
   const handleCopyTemplate = (content: string) => {
     navigator.clipboard.writeText(content);
@@ -209,21 +226,17 @@ const ReportDrafting: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Inside ReportDrafting component
   const handleSaveCustomTemplate = (name: string, contentHtml: string, placeholderKeys: string[]) => {
-    console.log('Saving custom template:', { name, contentHtml, placeholderKeys });
-    // Later: Add logic to save this to context or Supabase
-    // For now, maybe add to a local state to see it in the list for testing
-    const newCustomTemplate = {
-      id: `custom-${Date.now()}`,
+    const newCustomTemplate: AppTemplate = {
+      id: `custom-${Date.now()}-${name.replace(/\s+/g, '_')}`, // More unique ID
       name: name,
-      description: `Custom template: ${name.substring(0, 50)}...`,
-      content: contentHtml, // Storing HTML content for now
-      // We'll need to decide how to handle 'content' for custom templates vs predefined markdown ones.
-      // For now, this will make the preview show raw HTML.
+      description: `Custom Template: ${name.substring(0, 50)}...`,
+      content: contentHtml, // This is HTML from Quill
+      isCustom: true,
+      placeholderKeys: placeholderKeys,
     };
-    // setTemplates(prev => [...prev, newCustomTemplate]); // If 'templates' was state
-    alert(`Template "${name}" would be saved. See console for details.`);
+    setAllTemplates(prevTemplates => [...prevTemplates, newCustomTemplate]);
+    alert(`Template "${name}" saved locally for this session!`);
   };
 
   return (
@@ -303,22 +316,39 @@ const ReportDrafting: React.FC = () => {
           {activeTemplate && (
             <div className="mt-6 border border-border rounded-md p-4">
               <div className="flex justify-between items-center mb-4">
+                {(() => {
+                  const currentDisplayTemplate = allTemplates.find(t => t.id === activeTemplate);
+                  return (
+                    <>
                 <h3 className="font-medium">
-                  {templates.find(t => t.id === activeTemplate)?.name} Template
+                        {currentDisplayTemplate?.name} Template
+                        {currentDisplayTemplate?.isCustom && (
+                          <span className="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">Custom</span>
+                        )}
                 </h3>
                 <button 
                   className="btn border border-gold text-gold hover:bg-gold hover:bg-opacity-10"
-                  onClick={() => handleCopyTemplate(templates.find(t => t.id === activeTemplate)?.content || '')}
+                        onClick={() => handleCopyTemplate(currentDisplayTemplate?.content || '')}
                 >
                   <span className="flex items-center gap-1">
                     {copied ? <Check size={16} /> : <Copy size={16} />}
                     {copied ? 'Copied!' : 'Copy to Clipboard'}
                   </span>
                 </button>
+                    </>
+                  );
+                })()}
               </div>
               
               <div className="bg-bg-secondary p-4 rounded-md whitespace-pre-wrap font-mono text-sm overflow-auto max-h-96">
-                {templates.find(t => t.id === activeTemplate)?.content}
+                {(() => {
+                  const currentDisplayTemplate = allTemplates.find(t => t.id === activeTemplate);
+                  return currentDisplayTemplate?.isCustom ? (
+                    <div dangerouslySetInnerHTML={{ __html: currentDisplayTemplate.content }} />
+                  ) : (
+                    currentDisplayTemplate?.content  // Assumes predefined is Markdown-like text
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -351,7 +381,7 @@ const ReportDrafting: React.FC = () => {
           </div>
           
           <div className="space-y-3">
-            {templates.map((template) => (
+            {allTemplates.map((template) => (
               <div
                 key={template.id}
                 className={`w-full text-left p-4 border rounded-md transition-all flex flex-col ${
@@ -362,7 +392,12 @@ const ReportDrafting: React.FC = () => {
               >
                 <div className="flex items-start gap-2 mb-2">
                   <FileText className="text-gold" size={20} />
-                  <h3 className="font-medium text-lg">{template.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-lg">{template.name}</h3>
+                    {template.isCustom && (
+                      <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">Custom</span>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm text-text-secondary mt-1 line-clamp-3 mb-3">
                   {template.description}
@@ -376,6 +411,11 @@ const ReportDrafting: React.FC = () => {
                   </button>
                   <Link
                     to={`/reports/new?template=${template.id}`}
+                    state={template.isCustom ? { 
+                      customTemplateContent: template.content, 
+                      customTemplatePlaceholders: template.placeholderKeys,
+                      customTemplateName: template.name 
+                    } : undefined}
                     className="btn-sm bg-accent-gold text-black hover:bg-opacity-90 px-3 py-1 text-xs flex items-center gap-1"
                   >
                     Use Template
