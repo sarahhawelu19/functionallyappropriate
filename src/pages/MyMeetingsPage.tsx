@@ -98,16 +98,16 @@ const MyMeetingsPage: React.FC = () => {
 
   // UPDATED: Handle propose new time - navigate to Scheduling page
   const handleProposeNewTime = (meeting: any) => {
-    console.log('[MyMeetingsPage] Proposing for meeting:', meeting);
+    console.log('[MyMeetingsPage] User clicked Propose New Time for:', meeting);
+    
+    // Update RSVP status to indicate they're proposing a new time
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
     
     // Set the meeting context for proposing alternative FIRST
     setMeetingToProposeAlternativeFor(meeting);
-    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor in context should now be set.');
+    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor context state is now:', meeting);
     
-    // Update RSVP status to indicate they're proposing a new time
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
-    
-    console.log('[MyMeetingsPage] Navigating to /scheduling for proposal...');
+    console.log('[MyMeetingsPage] Should have navigated to /scheduling.');
     
     // Navigate to scheduling page - it will detect "proposing alternative" mode
     navigate('/scheduling');
@@ -165,16 +165,16 @@ const MyMeetingsPage: React.FC = () => {
 
   // UPDATED: Handle propose from modal
   const handleProposeFromModal = (meeting: any) => {
-    console.log('[MyMeetingsPage] Proposing for meeting from modal:', meeting);
+    console.log('[MyMeetingsPage] User clicked Propose New Time from modal for:', meeting);
+    
+    // Update RSVP status to indicate they're proposing a new time
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
     
     // Set the meeting context for proposing alternative FIRST
     setMeetingToProposeAlternativeFor(meeting);
-    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor in context should now be set from modal.');
+    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor context state is now set from modal:', meeting);
     
-    // Update RSVP status to indicate they're proposing a new time
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
-    
-    console.log('[MyMeetingsPage] Navigating to /scheduling for proposal from modal...');
+    console.log('[MyMeetingsPage] Should have navigated to /scheduling from modal.');
     
     // Navigate to scheduling page
     navigate('/scheduling');

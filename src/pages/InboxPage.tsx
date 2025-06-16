@@ -241,12 +241,14 @@ const InboxPage: React.FC = () => {
   };
 
   const handleProposeFromModal = (meeting: IEPMeeting) => {
-    console.log('[InboxPage] About to set meetingToProposeAlternativeFor from modal:', meeting);
+    console.log('[InboxPage] User clicked Propose New Time from modal for:', meeting);
     
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
     setMeetingToProposeAlternativeFor(meeting);
     
-    console.log('[InboxPage] Navigating to /scheduling for proposal from modal...');
+    console.log('[InboxPage] meetingToProposeAlternativeFor context state is now set from modal:', meeting);
+    console.log('[InboxPage] Should have navigated to /scheduling from modal.');
+    
     navigate('/scheduling');
   };
 

@@ -52,7 +52,7 @@ const Scheduling: React.FC = () => {
   const [viewingMeeting, setViewingMeeting] = useState<IEPMeeting | null>(null);
 
   // Log initial state from context
-  console.log('[SchedulingPage START] meetingToProposeAlternativeFor from context:', meetingToProposeAlternativeFor);
+  console.log('[Scheduling START] meetingToProposeAlternativeFor from context:', meetingToProposeAlternativeFor);
 
   // Effect to handle edit mode when component loads
   useEffect(() => {
@@ -69,49 +69,53 @@ const Scheduling: React.FC = () => {
 
   // NEW: Effect to handle proposing alternative mode
   useEffect(() => {
-    console.log('[SchedulingPage useEffect_ProposeAlternative] Fired. meetingToProposeAlternativeFor:', meetingToProposeAlternativeFor);
+    const currentContextValue = meetingToProposeAlternativeFor;
+    console.log('[Scheduling useEffect_Propose] Fired. Context meetingToProposeAlternativeFor:', currentContextValue);
     
-    if (meetingToProposeAlternativeFor) {
-      console.log('[SchedulingPage useEffect_ProposeAlternative] Processing proposal...');
+    if (currentContextValue) {
+      console.log('[Scheduling useEffect_Propose] Processing. Setting currentMeetingProposal, isProposingAlternativeFor, and calculating availability...');
       
       // Set up the proposal with original meeting details
       const newProposalDetails = {
-        studentId: meetingToProposeAlternativeFor.studentId,
-        studentName: meetingToProposeAlternativeFor.studentName,
-        meetingType: meetingToProposeAlternativeFor.meetingType,
-        customMeetingType: meetingToProposeAlternativeFor.customMeetingType,
-        teamMemberIds: meetingToProposeAlternativeFor.teamMemberIds,
-        durationMinutes: meetingToProposeAlternativeFor.durationMinutes,
+        studentId: currentContextValue.studentId,
+        studentName: currentContextValue.studentName,
+        meetingType: currentContextValue.meetingType,
+        customMeetingType: currentContextValue.customMeetingType,
+        teamMemberIds: currentContextValue.teamMemberIds,
+        durationMinutes: currentContextValue.durationMinutes,
       };
       
-      console.log('[SchedulingPage useEffect_ProposeAlternative] Setting currentMeetingProposal for proposal:', newProposalDetails);
+      console.log('[Scheduling useEffect_Propose] Setting currentMeetingProposal for proposal:', newProposalDetails);
       setCurrentMeetingProposal(newProposalDetails);
       
       // Set proposing mode
-      setIsProposingAlternativeFor(meetingToProposeAlternativeFor.id);
+      setIsProposingAlternativeFor(currentContextValue.id);
       
-      console.log('[SchedulingPage useEffect_ProposeAlternative] Setting viewMode to availability for proposal.');
+      console.log('[Scheduling useEffect_Propose] CRITICAL: Setting viewMode to availability.');
       setViewMode('availability');
       
       // Calculate availability for the same team and duration
-      if (meetingToProposeAlternativeFor.teamMemberIds && meetingToProposeAlternativeFor.durationMinutes) {
-        console.log('[SchedulingPage useEffect_ProposeAlternative] Triggering availability calculation for proposal.');
+      if (currentContextValue.teamMemberIds && currentContextValue.durationMinutes) {
+        console.log('[Scheduling useEffect_Propose] Triggering availability calculation for proposal.');
         
         const startDate = new Date();
         const endDate = addDays(startDate, 90); // Calculate 3 months ahead
         
         const availability = calculateTeamAvailability(
-          meetingToProposeAlternativeFor.teamMemberIds,
+          currentContextValue.teamMemberIds,
           startDate,
           endDate,
-          meetingToProposeAlternativeFor.durationMinutes
+          currentContextValue.durationMinutes
         );
         
         setCalculatedAvailability(availability);
-        console.log('[SchedulingPage useEffect_ProposeAlternative] Calculated Availability for alternative proposal:', availability);
+        console.log('[Scheduling useEffect_Propose] Calculated Availability for alternative proposal:', availability);
       }
       
-      console.log('[SchedulingPage useEffect_ProposeAlternative] ViewMode should be availability.');
+      console.log('[Scheduling useEffect_Propose] ViewMode should be availability.');
+    } else {
+      // This else block helps if the effect fires when the value is cleared
+      console.log('[Scheduling useEffect_Propose] meetingToProposeAlternativeFor is null/undefined, not entering proposal mode.');
     }
   }, [meetingToProposeAlternativeFor]);
 
@@ -299,7 +303,7 @@ const Scheduling: React.FC = () => {
   const handleBackToInitial = () => {
     // NEW: Updated back button behavior for proposing alternative mode
     if (isProposingAlternativeFor) {
-      console.log('[SchedulingPage] Back button clicked during proposal mode - clearing proposal state');
+      console.log('[Scheduling] Back button clicked during proposal mode - clearing proposal state');
       setIsProposingAlternativeFor(null);
       setMeetingToProposeAlternativeFor(null);
       setViewMode('initial');
