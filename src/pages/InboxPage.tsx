@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, Calendar, Clock, User, Users, AlertCircle, CheckCircle, XCircle, MessageSquare, Crown, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { useMeetings } from '../context/MeetingsContext';
 import { mockTeamMembers, IEPMeeting, AlternativeTimeProposal } from '../data/schedulingMockData';
 import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetailsModal';
@@ -23,11 +24,14 @@ const InboxPage: React.FC = () => {
   const currentUserId = 'tm2'; // David Chen (Teacher) - change to 'tm1', 'tm3', etc. to test different users
   const currentUser = mockTeamMembers.find(member => member.id === currentUserId);
   
+  const navigate = useNavigate();
   const { 
     iepMeetings, 
     updateMeetingRSVP, 
     setIepMeetings,
-    voteOnAlternative
+    voteOnAlternative,
+    setEditingMeetingId,
+    setMeetingToProposeAlternativeFor
   } = useMeetings();
   
   // State for ViewMeetingDetailsModal
@@ -214,8 +218,8 @@ const InboxPage: React.FC = () => {
 
   // ViewMeetingDetailsModal handlers
   const handleEditFromModal = (meeting: IEPMeeting) => {
-    // This would typically navigate to edit mode - placeholder for now
-    console.log('Edit meeting:', meeting.id);
+    setEditingMeetingId(meeting.id);
+    navigate('/scheduling');
   };
 
   const handleCancelFromModal = (meetingId: string) => {
@@ -237,7 +241,13 @@ const InboxPage: React.FC = () => {
   };
 
   const handleProposeFromModal = (meeting: IEPMeeting) => {
+    console.log('[InboxPage] About to set meetingToProposeAlternativeFor from modal:', meeting);
+    
     updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+    setMeetingToProposeAlternativeFor(meeting);
+    
+    console.log('[InboxPage] Navigating to /scheduling for proposal from modal...');
+    navigate('/scheduling');
   };
 
   const stats = getNotificationStats();
