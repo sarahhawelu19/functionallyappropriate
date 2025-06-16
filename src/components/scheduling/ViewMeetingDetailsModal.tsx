@@ -105,7 +105,7 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
 
   const handleProposeTime = () => {
     if (meeting) {
-      console.log('[ViewMeetingDetailsModal] About to set meetingToProposeAlternativeFor:', meeting);
+      console.log('[ViewMeetingDetailsModal] Proposing for meeting:', meeting);
       onProposeNewTime(meeting);
       onClose();
     }

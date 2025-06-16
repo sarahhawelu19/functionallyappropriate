@@ -98,13 +98,14 @@ const MyMeetingsPage: React.FC = () => {
 
   // UPDATED: Handle propose new time - navigate to Scheduling page
   const handleProposeNewTime = (meeting: any) => {
-    console.log('[MyMeetingsPage] About to set meetingToProposeAlternativeFor:', meeting);
+    console.log('[MyMeetingsPage] Proposing for meeting:', meeting);
+    
+    // Set the meeting context for proposing alternative FIRST
+    setMeetingToProposeAlternativeFor(meeting);
+    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor in context should now be set.');
     
     // Update RSVP status to indicate they're proposing a new time
     updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
-    
-    // Set the meeting context for proposing alternative
-    setMeetingToProposeAlternativeFor(meeting);
     
     console.log('[MyMeetingsPage] Navigating to /scheduling for proposal...');
     
@@ -164,13 +165,14 @@ const MyMeetingsPage: React.FC = () => {
 
   // UPDATED: Handle propose from modal
   const handleProposeFromModal = (meeting: any) => {
-    console.log('[MyMeetingsPage] About to set meetingToProposeAlternativeFor from modal:', meeting);
+    console.log('[MyMeetingsPage] Proposing for meeting from modal:', meeting);
+    
+    // Set the meeting context for proposing alternative FIRST
+    setMeetingToProposeAlternativeFor(meeting);
+    console.log('[MyMeetingsPage] meetingToProposeAlternativeFor in context should now be set from modal.');
     
     // Update RSVP status to indicate they're proposing a new time
     updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
-    
-    // Set the meeting context for proposing alternative
-    setMeetingToProposeAlternativeFor(meeting);
     
     console.log('[MyMeetingsPage] Navigating to /scheduling for proposal from modal...');
     
