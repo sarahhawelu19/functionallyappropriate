@@ -15,6 +15,9 @@ export default {
         'green': 'rgb(var(--color-green) / <alpha-value>)',
         'gold': 'rgb(var(--color-gold) / <alpha-value>)',
         'purple': 'rgb(var(--color-purple) / <alpha-value>)',
+        'orange': {
+          500: 'rgb(var(--color-orange) / <alpha-value>)',
+        },
       },
       spacing: {
         '18': '4.5rem',

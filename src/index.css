@@ -12,6 +12,7 @@
   --color-green: 0 128 0;
   --color-gold: 255 215 0;
   --color-purple: 128 0 128;
+  --color-orange: 255 165 0;
   
   /* Theme colors - light mode defaults */
   --color-bg-primary: var(--color-white);
@@ -127,6 +128,10 @@
     @apply text-purple border-purple;
   }
   
+  .accent-orange {
+    @apply text-orange-500 border-orange-500;
+  }
+  
   .bg-accent-teal {
     @apply bg-teal text-white;
   }
@@ -141,6 +146,10 @@
   
   .bg-accent-purple {
     @apply bg-purple text-white;
+  }
+  
+  .bg-accent-orange {
+    @apply bg-orange-500 text-white;
   }
 }
 
