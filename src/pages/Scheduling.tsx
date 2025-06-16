@@ -69,7 +69,7 @@ const Scheduling: React.FC = () => {
     }
   }, [editingMeetingId, iepMeetings]);
 
-  // FIXED: Enhanced useEffect to handle proposing alternative mode
+  // FIXED: Enhanced useEffect to handle proposing alternative mode with proper state management
   useEffect(() => {
     const currentContextValue = meetingToProposeAlternativeFor;
     console.log('[Scheduling useEffect_Propose] Fired. Context meetingToProposeAlternativeFor:', currentContextValue);
@@ -95,7 +95,8 @@ const Scheduling: React.FC = () => {
       console.log('[Scheduling useEffect_Propose] Setting isProposingAlternativeFor to:', currentContextValue.id);
       setIsProposingAlternativeFor(currentContextValue.id);
       
-      console.log('[Scheduling useEffect_Propose] CRITICAL: Setting viewMode to availability.');
+      // CRITICAL FIX: Force viewMode to availability immediately
+      console.log('[Scheduling useEffect_Propose] CRITICAL: Force setting viewMode to availability.');
       setViewMode('availability');
       
       // Calculate availability for the same team and duration
@@ -114,19 +115,33 @@ const Scheduling: React.FC = () => {
         
         setCalculatedAvailability(availability);
         console.log('[Scheduling useEffect_Propose] Calculated Availability for alternative proposal:', availability);
-        console.log('[Scheduling useEffect_Propose] ViewMode should now be availability. Current viewMode:', viewMode);
       }
       
-      console.log('[Scheduling useEffect_Propose] Proposal mode setup complete.');
+      console.log('[Scheduling useEffect_Propose] Proposal mode setup complete. ViewMode should now be availability.');
     } else {
       console.log('[Scheduling useEffect_Propose] meetingToProposeAlternativeFor is null/undefined, not entering proposal mode.');
+      
+      // ADDED: Reset states when context is cleared
+      if (isProposingAlternativeFor) {
+        console.log('[Scheduling useEffect_Propose] Clearing proposal states since context was cleared');
+        setIsProposingAlternativeFor(null);
+        setCurrentMeetingProposal(null);
+        setCalculatedAvailability(null);
+        setViewMode('initial');
+      }
     }
   }, [meetingToProposeAlternativeFor]); // Only depend on the context value
 
-  // FIXED: Additional useEffect to log viewMode changes
+  // FIXED: Additional useEffect to log viewMode changes and ensure consistency
   useEffect(() => {
     console.log('[Scheduling viewMode_Change] ViewMode changed to:', viewMode);
-  }, [viewMode]);
+    
+    // ADDED: Consistency check - if we have a proposal context but viewMode is initial, fix it
+    if (meetingToProposeAlternativeFor && viewMode === 'initial') {
+      console.log('[Scheduling viewMode_Change] INCONSISTENCY DETECTED: Have proposal context but viewMode is initial. Forcing to availability.');
+      setViewMode('availability');
+    }
+  }, [viewMode, meetingToProposeAlternativeFor]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -434,6 +449,13 @@ const Scheduling: React.FC = () => {
   console.log('[Scheduling RENDER] Current viewMode:', viewMode);
   console.log('[Scheduling RENDER] Current mode:', currentMode);
   console.log('[Scheduling RENDER] isProposingAlternativeFor:', isProposingAlternativeFor);
+  console.log('[Scheduling RENDER] meetingToProposeAlternativeFor context:', meetingToProposeAlternativeFor);
+
+  // CRITICAL FIX: Force availability view if we have proposal context but wrong viewMode
+  if (meetingToProposeAlternativeFor && viewMode === 'initial') {
+    console.log('[Scheduling RENDER] CRITICAL FIX: Forcing viewMode to availability due to proposal context');
+    setViewMode('availability');
+  }
 
   // Initial View
   if (viewMode === 'initial') {
