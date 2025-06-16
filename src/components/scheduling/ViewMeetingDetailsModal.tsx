@@ -103,6 +103,7 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
     }
   };
 
+  // FIXED: Handle propose time with proper logging and context setting
   const handleProposeTime = () => {
     if (meeting) {
       console.log('[ViewMeetingDetailsModal] User clicked Propose New Time from modal for:', meeting);

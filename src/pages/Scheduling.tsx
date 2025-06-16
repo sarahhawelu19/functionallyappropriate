@@ -51,8 +51,10 @@ const Scheduling: React.FC = () => {
   // State for ViewMeetingDetailsModal
   const [viewingMeeting, setViewingMeeting] = useState<IEPMeeting | null>(null);
 
-  // Log initial state from context
-  console.log('[Scheduling START] meetingToProposeAlternativeFor from context:', meetingToProposeAlternativeFor);
+  // FIXED: Enhanced logging for initial state from context
+  console.log('[Scheduling COMPONENT_LOAD] meetingToProposeAlternativeFor from context:', meetingToProposeAlternativeFor);
+  console.log('[Scheduling COMPONENT_LOAD] Current viewMode:', viewMode);
+  console.log('[Scheduling COMPONENT_LOAD] Current isProposingAlternativeFor:', isProposingAlternativeFor);
 
   // Effect to handle edit mode when component loads
   useEffect(() => {
@@ -67,13 +69,14 @@ const Scheduling: React.FC = () => {
     }
   }, [editingMeetingId, iepMeetings]);
 
-  // NEW: Effect to handle proposing alternative mode
+  // FIXED: Enhanced useEffect to handle proposing alternative mode
   useEffect(() => {
     const currentContextValue = meetingToProposeAlternativeFor;
     console.log('[Scheduling useEffect_Propose] Fired. Context meetingToProposeAlternativeFor:', currentContextValue);
+    console.log('[Scheduling useEffect_Propose] Current viewMode before processing:', viewMode);
     
     if (currentContextValue) {
-      console.log('[Scheduling useEffect_Propose] Processing. Setting currentMeetingProposal, isProposingAlternativeFor, and calculating availability...');
+      console.log('[Scheduling useEffect_Propose] Processing proposal mode. Setting states...');
       
       // Set up the proposal with original meeting details
       const newProposalDetails = {
@@ -89,6 +92,7 @@ const Scheduling: React.FC = () => {
       setCurrentMeetingProposal(newProposalDetails);
       
       // Set proposing mode
+      console.log('[Scheduling useEffect_Propose] Setting isProposingAlternativeFor to:', currentContextValue.id);
       setIsProposingAlternativeFor(currentContextValue.id);
       
       console.log('[Scheduling useEffect_Propose] CRITICAL: Setting viewMode to availability.');
@@ -110,14 +114,19 @@ const Scheduling: React.FC = () => {
         
         setCalculatedAvailability(availability);
         console.log('[Scheduling useEffect_Propose] Calculated Availability for alternative proposal:', availability);
+        console.log('[Scheduling useEffect_Propose] ViewMode should now be availability. Current viewMode:', viewMode);
       }
       
-      console.log('[Scheduling useEffect_Propose] ViewMode should be availability.');
+      console.log('[Scheduling useEffect_Propose] Proposal mode setup complete.');
     } else {
-      // This else block helps if the effect fires when the value is cleared
       console.log('[Scheduling useEffect_Propose] meetingToProposeAlternativeFor is null/undefined, not entering proposal mode.');
     }
-  }, [meetingToProposeAlternativeFor]);
+  }, [meetingToProposeAlternativeFor]); // Only depend on the context value
+
+  // FIXED: Additional useEffect to log viewMode changes
+  useEffect(() => {
+    console.log('[Scheduling viewMode_Change] ViewMode changed to:', viewMode);
+  }, [viewMode]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -159,8 +168,13 @@ const Scheduling: React.FC = () => {
   const handleSlotClick = (slot: AvailableSlot) => {
     if (!currentMeetingProposal) return;
     
+    console.log('[Scheduling handleSlotClick] Slot clicked:', slot);
+    console.log('[Scheduling handleSlotClick] isProposingAlternativeFor:', isProposingAlternativeFor);
+    
     // NEW: Check if we're proposing an alternative time
     if (isProposingAlternativeFor) {
+      console.log('[Scheduling handleSlotClick] Creating alternative proposal for meeting:', isProposingAlternativeFor);
+      
       // Create alternative proposal
       const proposal: AlternativeTimeProposal = {
         proposalId: Date.now().toString(),
@@ -173,6 +187,8 @@ const Scheduling: React.FC = () => {
           vote: teamMemberId === currentUserId ? 'AcceptAlternative' as const : 'Pending' as const,
         })),
       };
+      
+      console.log('[Scheduling handleSlotClick] Adding alternative proposal:', proposal);
       
       // Add the proposal to the original meeting
       addAlternativeProposal(isProposingAlternativeFor, proposal);
@@ -231,6 +247,8 @@ const Scheduling: React.FC = () => {
   };
 
   const handleConfirmationClose = () => {
+    console.log('[Scheduling handleConfirmationClose] Closing confirmation and resetting states');
+    
     // Reset all states and return to initial view
     setIsConfirmationModalOpen(false);
     setConfirmedMeetingDetails(null);
@@ -247,6 +265,8 @@ const Scheduling: React.FC = () => {
     // NEW: Clear proposing alternative states
     setIsProposingAlternativeFor(null);
     setMeetingToProposeAlternativeFor(null);
+    
+    console.log('[Scheduling handleConfirmationClose] All states reset');
   };
 
   const handleSendInvitations = (meeting: IEPMeeting) => {
@@ -301,9 +321,12 @@ const Scheduling: React.FC = () => {
   };
 
   const handleBackToInitial = () => {
+    console.log('[Scheduling handleBackToInitial] Back button clicked');
+    console.log('[Scheduling handleBackToInitial] isProposingAlternativeFor:', isProposingAlternativeFor);
+    
     // NEW: Updated back button behavior for proposing alternative mode
     if (isProposingAlternativeFor) {
-      console.log('[Scheduling] Back button clicked during proposal mode - clearing proposal state');
+      console.log('[Scheduling handleBackToInitial] Back button clicked during proposal mode - clearing proposal state');
       setIsProposingAlternativeFor(null);
       setMeetingToProposeAlternativeFor(null);
       setViewMode('initial');
@@ -408,8 +431,13 @@ const Scheduling: React.FC = () => {
 
   const currentMode = getCurrentMode();
 
+  console.log('[Scheduling RENDER] Current viewMode:', viewMode);
+  console.log('[Scheduling RENDER] Current mode:', currentMode);
+  console.log('[Scheduling RENDER] isProposingAlternativeFor:', isProposingAlternativeFor);
+
   // Initial View
   if (viewMode === 'initial') {
+    console.log('[Scheduling RENDER] Rendering initial view');
     return (
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-6">
@@ -528,6 +556,7 @@ const Scheduling: React.FC = () => {
   }
 
   // Availability View
+  console.log('[Scheduling RENDER] Rendering availability view');
   const { commonSlots: monthCommonSlots } = getMonthSlots();
 
   return (
