@@ -8,12 +8,14 @@ import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetails
 import { IEPMeeting, mockTeamMembers, AlternativeTimeProposal } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 import { useMeetings } from '../context/MeetingsContext';
+import { useNavigate } from 'react-router-dom';
 
 type ViewMode = 'initial' | 'availability';
 
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
+  const navigate = useNavigate();
   const { 
     iepMeetings, 
     addMeeting, 
@@ -382,6 +384,25 @@ const Scheduling: React.FC = () => {
     setViewingMeeting(meeting);
   };
 
+  // STANDARDIZED: Propose New Time function - used by modal from Upcoming Events
+  const executeProposalWorkflow = (meeting: IEPMeeting, source: string) => {
+    console.log(`[SchedulingPage] ${source}: User clicked Propose New Time for:`, meeting);
+    
+    // Step 1: Update RSVP status to indicate they're proposing a new time
+    console.log(`[SchedulingPage] ${source}: Step 1 - Updating RSVP status`);
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
+    
+    // Step 2: Set the meeting context for proposing alternative
+    console.log(`[SchedulingPage] ${source}: Step 2 - Setting meetingToProposeAlternativeFor context state to:`, meeting);
+    setMeetingToProposeAlternativeFor(meeting);
+    
+    // Step 3: Navigate to scheduling page with small delay to ensure context is set
+    setTimeout(() => {
+      console.log(`[SchedulingPage] ${source}: Step 3 - Navigating to /scheduling for proposal mode`);
+      navigate('/scheduling');
+    }, 100);
+  };
+
   // ViewMeetingDetailsModal handlers
   const handleEditFromModal = (meeting: IEPMeeting) => {
     setEditingMeetingId(meeting.id);
@@ -406,8 +427,9 @@ const Scheduling: React.FC = () => {
     updateMeetingRSVP(meetingId, currentUserId, 'Declined');
   };
 
+  // FIXED: This is the critical fix - use the standardized workflow for proposals from Upcoming Events modal
   const handleProposeFromModal = (meeting: IEPMeeting) => {
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'Requested alternative time');
+    executeProposalWorkflow(meeting, 'SCHEDULING_UPCOMING_EVENTS_MODAL');
   };
 
   const getTeamMemberNames = (teamMemberIds: string[]) => {
