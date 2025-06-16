@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock, Users, Mail, User, Crown, Edit, Trash2, Check, XCircle, MessageSquare } from 'lucide-react';
+import { X, Check, Calendar, Clock, Users, Mail, User, Crown, Edit, Trash2, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { IEPMeeting, mockTeamMembers, MeetingParticipantRSVP } from '../../data/schedulingMockData';
 
@@ -103,12 +103,12 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
     }
   };
 
-  // FIXED: Handle propose time with proper logging and context setting
+  // STANDARDIZED: Handle propose time with proper logging and context setting
   const handleProposeTime = () => {
     if (meeting) {
-      console.log('[ViewMeetingDetailsModal] User clicked Propose New Time from modal for:', meeting);
-      onProposeNewTime(meeting);
-      onClose();
+      console.log('[ViewMeetingDetailsModal] "Propose New Time" clicked. Calling onProposeNewTime prop with meeting:', meeting);
+      onProposeNewTime(meeting); // This calls the standardized handler from the parent component
+      onClose(); // Close this details modal
     }
   };
 
@@ -428,6 +428,17 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
                                 Responded: {format(new Date(currentRSVP.respondedAt), 'MMM d, yyyy h:mm a')}
                               </div>
                             )}
+                            
+                            {/* ADDED: Always show "Propose New Time" button for invitees */}
+                            <div className="mt-3">
+                              <button
+                                onClick={handleProposeTime}
+                                className="w-full btn-sm border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center justify-center gap-1 text-xs"
+                              >
+                                <Clock size={12} />
+                                Propose Alternative Time
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}

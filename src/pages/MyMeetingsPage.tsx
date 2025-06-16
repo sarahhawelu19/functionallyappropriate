@@ -96,22 +96,33 @@ const MyMeetingsPage: React.FC = () => {
     setDeclineNote('');
   };
 
-  // FIXED: Handle propose new time - navigate to Scheduling page
-  const handleProposeNewTime = (meeting: any) => {
-    console.log('[MyMeetingsPage] User clicked Propose New Time for:', meeting);
+  // STANDARDIZED: Propose New Time function - used by both card buttons and modal
+  const executeProposalWorkflow = (meeting: any, source: string) => {
+    console.log(`[MyMeetingsPage] ${source}: User clicked Propose New Time for:`, meeting);
     
-    // Update RSVP status to indicate they're proposing a new time
+    // Step 1: Update RSVP status to indicate they're proposing a new time
+    console.log(`[MyMeetingsPage] ${source}: Step 1 - Updating RSVP status`);
     updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
     
-    // CRITICAL: Set the meeting context for proposing alternative FIRST
-    console.log('[MyMeetingsPage] Setting meetingToProposeAlternativeFor context state to:', meeting);
+    // Step 2: Set the meeting context for proposing alternative
+    console.log(`[MyMeetingsPage] ${source}: Step 2 - Setting meetingToProposeAlternativeFor context state to:`, meeting);
     setMeetingToProposeAlternativeFor(meeting);
     
-    // Small delay to ensure context state is set before navigation
+    // Step 3: Navigate to scheduling page with small delay to ensure context is set
     setTimeout(() => {
-      console.log('[MyMeetingsPage] Navigating to /scheduling for proposal mode');
+      console.log(`[MyMeetingsPage] ${source}: Step 3 - Navigating to /scheduling for proposal mode`);
       navigate('/scheduling');
-    }, 50);
+    }, 100); // Increased delay slightly for reliability
+  };
+
+  // Direct card button handler
+  const handleProposeNewTime = (meeting: any) => {
+    executeProposalWorkflow(meeting, 'CARD_BUTTON');
+  };
+
+  // Modal handler - called when "Propose New Time" is clicked within ViewMeetingDetailsModal
+  const handleProposeFromModal = (meeting: any) => {
+    executeProposalWorkflow(meeting, 'MODAL_BUTTON');
   };
 
   // Handle Edit Meeting - Navigate to Scheduling page with meeting details
@@ -164,24 +175,6 @@ const MyMeetingsPage: React.FC = () => {
     updateMeetingRSVP(meetingId, currentUserId, 'Declined');
   };
 
-  // FIXED: Handle propose from modal
-  const handleProposeFromModal = (meeting: any) => {
-    console.log('[MyMeetingsPage] User clicked Propose New Time from modal for:', meeting);
-    
-    // Update RSVP status to indicate they're proposing a new time
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
-    
-    // CRITICAL: Set the meeting context for proposing alternative FIRST
-    console.log('[MyMeetingsPage] Setting meetingToProposeAlternativeFor context state from modal to:', meeting);
-    setMeetingToProposeAlternativeFor(meeting);
-    
-    // Small delay to ensure context state is set before navigation
-    setTimeout(() => {
-      console.log('[MyMeetingsPage] Navigating to /scheduling from modal for proposal mode');
-      navigate('/scheduling');
-    }, 50);
-  };
-
   const getOtherParticipants = (meeting: any) => {
     return meeting.teamMemberIds
       .filter((id: string) => id !== currentUserId)
@@ -232,8 +225,7 @@ const MyMeetingsPage: React.FC = () => {
             return (
               <div 
                 key={meeting.id} 
-                className={`card border-l-4 ${userIsOrganizer ? 'border-l-gold' : 'border-l-teal'} cursor-pointer hover:shadow-lg transition-all`}
-                onClick={() => handleMeetingClick(meeting)}
+                className={`card border-l-4 ${userIsOrganizer ? 'border-l-gold' : 'border-l-teal'} hover:shadow-lg transition-all`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                   {/* Meeting Details */}
@@ -358,8 +350,65 @@ const MyMeetingsPage: React.FC = () => {
                       </div>
                     )}
 
+                    {/* ADDED: Quick Action Buttons for Invitees (Non-Organizers) */}
+                    {!userIsOrganizer && (
+                      <div className="mb-4 p-4 bg-bg-secondary rounded-md">
+                        <h4 className="font-medium mb-3">Quick Actions</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {rsvpStatus?.status === 'Pending' ? (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAccept(meeting.id);
+                                }}
+                                className="btn-sm bg-green text-white hover:bg-opacity-90 flex items-center gap-1"
+                              >
+                                <Check size={14} />
+                                Accept
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDecline(meeting.id);
+                                }}
+                                className="btn-sm border border-red-500 text-red-500 hover:bg-red-500 hover:bg-opacity-10 flex items-center gap-1"
+                              >
+                                <X size={14} />
+                                Decline
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleProposeNewTime(meeting);
+                                }}
+                                className="btn-sm border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center gap-1"
+                              >
+                                <ClockIcon size={14} />
+                                Propose New Time
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleProposeNewTime(meeting);
+                              }}
+                              className="btn-sm border border-gold text-gold hover:bg-gold hover:bg-opacity-10 flex items-center gap-1"
+                            >
+                              <ClockIcon size={14} />
+                              Propose Alternative Time
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Click to view details hint */}
-                    <div className="text-sm text-teal hover:underline">
+                    <div 
+                      className="text-sm text-teal hover:underline cursor-pointer"
+                      onClick={() => handleMeetingClick(meeting)}
+                    >
                       Click to view full details and take actions →
                     </div>
                   </div>

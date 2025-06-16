@@ -216,7 +216,25 @@ const InboxPage: React.FC = () => {
     return stats;
   };
 
-  // ViewMeetingDetailsModal handlers
+  // STANDARDIZED: ViewMeetingDetailsModal handlers using the same pattern as MyMeetingsPage
+  const executeProposalWorkflow = (meeting: IEPMeeting, source: string) => {
+    console.log(`[InboxPage] ${source}: User clicked Propose New Time for:`, meeting);
+    
+    // Step 1: Update RSVP status to indicate they're proposing a new time
+    console.log(`[InboxPage] ${source}: Step 1 - Updating RSVP status`);
+    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
+    
+    // Step 2: Set the meeting context for proposing alternative
+    console.log(`[InboxPage] ${source}: Step 2 - Setting meetingToProposeAlternativeFor context state to:`, meeting);
+    setMeetingToProposeAlternativeFor(meeting);
+    
+    // Step 3: Navigate to scheduling page with small delay to ensure context is set
+    setTimeout(() => {
+      console.log(`[InboxPage] ${source}: Step 3 - Navigating to /scheduling for proposal mode`);
+      navigate('/scheduling');
+    }, 100);
+  };
+
   const handleEditFromModal = (meeting: IEPMeeting) => {
     setEditingMeetingId(meeting.id);
     navigate('/scheduling');
@@ -241,15 +259,7 @@ const InboxPage: React.FC = () => {
   };
 
   const handleProposeFromModal = (meeting: IEPMeeting) => {
-    console.log('[InboxPage] User clicked Propose New Time from modal for:', meeting);
-    
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
-    setMeetingToProposeAlternativeFor(meeting);
-    
-    console.log('[InboxPage] meetingToProposeAlternativeFor context state is now set from modal:', meeting);
-    console.log('[InboxPage] Should have navigated to /scheduling from modal.');
-    
-    navigate('/scheduling');
+    executeProposalWorkflow(meeting, 'INBOX_MODAL_BUTTON');
   };
 
   const stats = getNotificationStats();
