@@ -79,7 +79,7 @@ const InboxPage: React.FC = () => {
           id: `invitation-${meeting.id}`,
           type: 'new_invitation',
           meeting,
-          timestamp: meeting.id, // Using meeting ID as timestamp proxy
+          timestamp: new Date(Number(meeting.id)).toISOString(), // Convert meeting.id to number, then to Date, then to ISO string
           title: `New Meeting Invitation`,
           description: `${meeting.meetingType} for ${meeting.studentName} on ${meeting.date ? formatDate(meeting.date) : 'TBD'} at ${meeting.time ? formatTime(meeting.time) : 'TBD'}`,
           actionText: 'View & RSVP',
@@ -100,7 +100,7 @@ const InboxPage: React.FC = () => {
             id: `updated-${meeting.id}`,
             type: 'meeting_updated',
             meeting,
-            timestamp: meeting.id,
+            timestamp: new Date(Number(meeting.id)).toISOString(), // Convert meeting.id to number, then to Date, then to ISO string
             title: `Meeting Updated`,
             description: `${meeting.meetingType} for ${meeting.studentName} has been updated. New details: ${meeting.date ? formatDate(meeting.date) : 'TBD'} at ${meeting.time ? formatTime(meeting.time) : 'TBD'}. Please re-confirm your attendance.`,
             actionText: 'Review Changes',
