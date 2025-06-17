@@ -340,9 +340,15 @@ const MyMeetingsPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Alternative Proposals Summary */}
+                    {/* FIXED: Alternative Proposals Summary - Now Clickable */}
                     {hasAlternativeProposals && (
-                      <div className="mb-4 p-3 bg-blue-500 bg-opacity-10 border border-blue-500 rounded-md">
+                      <div 
+                        className="mb-4 p-3 bg-blue-500 bg-opacity-10 border border-blue-500 rounded-md cursor-pointer hover:bg-blue-500 hover:bg-opacity-20 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent event bubbling to parent card
+                          handleMeetingClick(meeting);
+                        }}
+                      >
                         <h4 className="font-medium text-blue-500 mb-2">Alternative Times Proposed</h4>
                         <div className="text-sm text-text-secondary">
                           {meeting.alternativeProposals.length} alternative time{meeting.alternativeProposals.length !== 1 ? 's' : ''} proposed by team members. 
