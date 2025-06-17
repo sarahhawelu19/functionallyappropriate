@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft, Eye } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DaySlotsModal from '../components/scheduling/DaySlotsModal';
 import MeetingConfirmationModal from '../components/scheduling/MeetingConfirmationModal';
@@ -8,7 +9,6 @@ import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetails
 import { IEPMeeting, mockTeamMembers, AlternativeTimeProposal } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
 import { useMeetings } from '../context/MeetingsContext';
-import { useNavigate } from 'react-router-dom';
 
 type ViewMode = 'initial' | 'availability';
 
@@ -26,6 +26,7 @@ const Scheduling: React.FC = () => {
     setIepMeetings,
     // NEW: Alternative proposal functions
     addAlternativeProposal,
+    voteOnAlternative,
     meetingToProposeAlternativeFor,
     setMeetingToProposeAlternativeFor
   } = useMeetings();
@@ -594,6 +595,7 @@ const Scheduling: React.FC = () => {
           onAccept={handleAcceptFromModal}
           onDecline={handleDeclineFromModal}
           onProposeNewTime={handleProposeFromModal}
+          onVoteOnProposal={voteOnAlternative}
         />
       </div>
     );
@@ -974,6 +976,7 @@ const Scheduling: React.FC = () => {
         onAccept={handleAcceptFromModal}
         onDecline={handleDeclineFromModal}
         onProposeNewTime={handleProposeFromModal}
+        onVoteOnProposal={voteOnAlternative}
       />
     </div>
   );

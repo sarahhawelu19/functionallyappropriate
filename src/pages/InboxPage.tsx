@@ -452,6 +452,7 @@ const InboxPage: React.FC = () => {
         onAccept={handleAcceptFromModal}
         onDecline={handleDeclineFromModal}
         onProposeNewTime={handleProposeFromModal}
+        onVoteOnProposal={voteOnAlternative}
       />
     </div>
   );

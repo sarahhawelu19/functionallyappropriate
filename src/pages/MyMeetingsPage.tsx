@@ -17,7 +17,8 @@ const MyMeetingsPage: React.FC = () => {
     updateMeetingRSVP, 
     setIepMeetings, 
     setEditingMeetingId,
-    setMeetingToProposeAlternativeFor // NEW: For proposing alternatives
+    setMeetingToProposeAlternativeFor, // NEW: For proposing alternatives
+    voteOnAlternative // NEW: For voting on alternative proposals
   } = useMeetings();
   const [declineNote, setDeclineNote] = useState('');
   const [showDeclineModal, setShowDeclineModal] = useState<string | null>(null);
@@ -490,6 +491,7 @@ const MyMeetingsPage: React.FC = () => {
         onAccept={handleAcceptFromModal}
         onDecline={handleDeclineFromModal}
         onProposeNewTime={handleProposeFromModal}
+        onVoteOnProposal={voteOnAlternative}
       />
     </div>
   );

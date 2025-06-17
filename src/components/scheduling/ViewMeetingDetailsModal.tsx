@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, Calendar, Clock, Users, Mail, User, Crown, Edit, Trash2, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import { X, Check, Calendar, Clock, Users, Mail, User, Crown, Edit, Trash2, CheckCircle, XCircle, MessageSquare, ThumbsUp, ThumbsDown, Vote } from 'lucide-react';
 import { format } from 'date-fns';
 import { IEPMeeting, mockTeamMembers, MeetingParticipantRSVP } from '../../data/schedulingMockData';
 
@@ -13,6 +13,7 @@ interface ViewMeetingDetailsModalProps {
   onAccept: (meetingId: string) => void;
   onDecline: (meetingId: string) => void;
   onProposeNewTime: (meeting: IEPMeeting) => void;
+  onVoteOnProposal: (meetingId: string, proposalId: string, voterId: string, vote: 'AcceptAlternative' | 'PreferOriginal') => void;
 }
 
 const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
@@ -25,6 +26,7 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
   onAccept,
   onDecline,
   onProposeNewTime,
+  onVoteOnProposal,
 }) => {
   const [showDeclineNote, setShowDeclineNote] = useState(false);
   const [declineNote, setDeclineNote] = useState('');
@@ -71,6 +73,11 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
     return meeting?.createdByUserId === currentUserId;
   };
 
+  const getTeamMemberName = (memberId: string): string => {
+    const member = mockTeamMembers.find(m => m.id === memberId);
+    return member ? member.name : 'Unknown Member';
+  };
+
   const handleDeclineWithNote = () => {
     if (meeting) {
       onDecline(meeting.id);
@@ -112,12 +119,43 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
     }
   };
 
+  // NEW: Handle voting on alternative proposals
+  const handleVoteOnAlternative = (proposalId: string, vote: 'AcceptAlternative' | 'PreferOriginal') => {
+    if (meeting) {
+      console.log('[ViewMeetingDetailsModal] Voting on proposal:', proposalId, 'Vote:', vote);
+      onVoteOnProposal(meeting.id, proposalId, currentUserId, vote);
+    }
+  };
+
+  // NEW: Get vote summary for a specific proposal
+  const getProposalVoteSummary = (proposalId: string) => {
+    const proposal = meeting?.alternativeProposals?.find(p => p.proposalId === proposalId);
+    if (!proposal) return { acceptAlternative: 0, preferOriginal: 0, pending: 0, total: 0 };
+
+    const acceptAlternative = proposal.votes.filter(v => v.vote === 'AcceptAlternative').length;
+    const preferOriginal = proposal.votes.filter(v => v.vote === 'PreferOriginal').length;
+    const pending = proposal.votes.filter(v => v.vote === 'Pending').length;
+    const total = proposal.votes.length;
+
+    return { acceptAlternative, preferOriginal, pending, total };
+  };
+
+  // NEW: Check if current user has voted on a specific proposal
+  const getCurrentUserVote = (proposalId: string) => {
+    const proposal = meeting?.alternativeProposals?.find(p => p.proposalId === proposalId);
+    if (!proposal) return null;
+
+    const userVote = proposal.votes.find(v => v.teamMemberId === currentUserId);
+    return userVote ? userVote.vote : 'Pending';
+  };
+
   if (!isOpen || !meeting) return null;
 
   const teamMembers = getTeamMembers();
   const currentRSVP = getCurrentRSVPStatus();
   const responseSummary = getResponseSummary();
   const userIsOrganizer = isOrganizer();
+  const hasAlternativeProposals = meeting.alternativeProposals && meeting.alternativeProposals.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -308,6 +346,124 @@ const ViewMeetingDetailsModal: React.FC<ViewMeetingDetailsModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* NEW: Alternative Time Proposals Section */}
+                {hasAlternativeProposals && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium mb-4 flex items-center gap-2">
+                      <Vote className="text-blue-500" size={20} />
+                      Alternative Times Proposed ({meeting.alternativeProposals!.length})
+                    </h4>
+                    
+                    <div className="space-y-4">
+                      {meeting.alternativeProposals!.map((proposal, index) => {
+                        const proposerName = getTeamMemberName(proposal.proposedByMemberId);
+                        const voteSummary = getProposalVoteSummary(proposal.proposalId);
+                        const currentUserVote = getCurrentUserVote(proposal.proposalId);
+                        const hasUserVoted = currentUserVote !== 'Pending';
+                        
+                        return (
+                          <div key={proposal.proposalId} className="p-4 border border-blue-500 bg-blue-500 bg-opacity-5 rounded-lg">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h5 className="font-medium text-blue-500 mb-1">
+                                  Alternative #{index + 1}
+                                </h5>
+                                <div className="text-sm text-text-secondary">
+                                  Proposed by: <span className="font-medium">{proposerName}</span>
+                                </div>
+                                <div className="text-xs text-text-secondary">
+                                  {format(new Date(proposal.proposedAt), 'MMM d, yyyy h:mm a')}
+                                </div>
+                              </div>
+                              
+                              {hasUserVoted && (
+                                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  currentUserVote === 'AcceptAlternative' 
+                                    ? 'bg-green bg-opacity-10 text-green border border-green' 
+                                    : 'bg-orange-500 bg-opacity-10 text-orange-500 border border-orange-500'
+                                }`}>
+                                  {currentUserVote === 'AcceptAlternative' ? 'You voted: Accept' : 'You voted: Prefer Original'}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Proposed Time Details */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-3 bg-bg-secondary rounded-md">
+                              <div>
+                                <div className="text-sm text-text-secondary">Proposed Date:</div>
+                                <div className="font-medium">{formatDate(proposal.proposedDate)}</div>
+                              </div>
+                              <div>
+                                <div className="text-sm text-text-secondary">Proposed Time:</div>
+                                <div className="font-medium">
+                                  {formatTime(proposal.proposedTime)} ({meeting.durationMinutes} min)
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Vote Summary */}
+                            <div className="mb-4 p-3 bg-bg-primary rounded-md">
+                              <h6 className="font-medium mb-2 text-sm">Current Votes:</h6>
+                              <div className="grid grid-cols-3 gap-4 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <ThumbsUp className="text-green" size={14} />
+                                  <span className="font-medium">{voteSummary.acceptAlternative}</span>
+                                  <span className="text-text-secondary">Accept</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <ThumbsDown className="text-orange-500" size={14} />
+                                  <span className="font-medium">{voteSummary.preferOriginal}</span>
+                                  <span className="text-text-secondary">Prefer Original</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Clock className="text-text-secondary" size={14} />
+                                  <span className="font-medium">{voteSummary.pending}</span>
+                                  <span className="text-text-secondary">Pending</span>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-2 pt-2 border-t border-border">
+                                <div className="text-xs text-text-secondary">
+                                  Vote Progress: {Math.round(((voteSummary.acceptAlternative + voteSummary.preferOriginal) / voteSummary.total) * 100)}% responded
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Voting Actions */}
+                            {!userIsOrganizer && !hasUserVoted && (
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => handleVoteOnAlternative(proposal.proposalId, 'AcceptAlternative')}
+                                  className="flex-1 btn bg-green text-white hover:bg-opacity-90 flex items-center justify-center gap-2"
+                                >
+                                  <ThumbsUp size={16} />
+                                  Accept this Alternative
+                                </button>
+                                <button
+                                  onClick={() => handleVoteOnAlternative(proposal.proposalId, 'PreferOriginal')}
+                                  className="flex-1 btn border border-orange-500 text-orange-500 hover:bg-orange-500 hover:bg-opacity-10 flex items-center justify-center gap-2"
+                                >
+                                  <ThumbsDown size={16} />
+                                  Prefer Original Time
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Show voting status for organizer */}
+                            {userIsOrganizer && (
+                              <div className="p-3 bg-gold bg-opacity-10 border border-gold rounded-md">
+                                <div className="text-sm text-gold font-medium">
+                                  As the organizer, you can monitor voting progress. Once voting is complete, you can decide whether to adopt the alternative time or keep the original.
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Show decline note if current user declined */}
                 {!userIsOrganizer && currentRSVP?.status === 'Declined' && currentRSVP.note && (
