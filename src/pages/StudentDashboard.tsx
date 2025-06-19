@@ -228,7 +228,7 @@ const StudentDashboard: React.FC = () => {
                         <button className="btn bg-accent-purple text-xs py-1 px-3">View</button>
                         <Link
                           to={`/student-service-schedule/s${student.id}`}
-                          className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 text-xs py-1 px-3 flex items-center gap-1"
+                          className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 text-xs py-1 px-3 flex items-center gap-1 no-underline"
                           title="Manage Service Schedule"
                         >
                           <Settings size={12} />
