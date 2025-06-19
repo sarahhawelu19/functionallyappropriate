@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, User, Clock, ArrowUp, ArrowDown, Search, Filter, Settings } from 'lucide-react';
+import { BarChart3, User, Clock, ArrowUp, ArrowDown, Search, Filter, Settings, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { mockStudents } from '../data/schedulingMockData';
 
@@ -13,6 +13,188 @@ interface Student {
   goalsMet: number;
   totalGoals: number;
 }
+
+// Student Detail Modal Component
+interface StudentDetailModalProps {
+  student: Student | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ student, isOpen, onClose }) => {
+  if (!isOpen || !student) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+      
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative w-full max-w-2xl bg-bg-primary rounded-lg shadow-lg">
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple rounded-full text-white">
+                <User size={24} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-medium">Student Details</h2>
+                <p className="text-text-secondary">{student.name}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-bg-secondary rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="p-6">
+            {/* Student Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="p-4 bg-bg-secondary rounded-lg">
+                <h3 className="font-medium mb-3 flex items-center gap-2">
+                  <User className="text-purple" size={16} />
+                  Basic Information
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">Name:</span>
+                    <span className="font-medium">{student.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">Grade:</span>
+                    <span className="font-medium">{student.grade}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">Program:</span>
+                    <span className="font-medium">{student.program}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-secondary">Student ID:</span>
+                    <span className="font-medium">s{student.id}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-bg-secondary rounded-lg">
+                <h3 className="font-medium mb-3 flex items-center gap-2">
+                  <BarChart3 className="text-purple" size={16} />
+                  Progress Overview
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Overall Progress</span>
+                      <span className="font-medium">{student.progress}%</span>
+                    </div>
+                    <div className="w-full bg-bg-primary rounded-full h-2">
+                      <div 
+                        className="bg-purple h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${student.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-secondary">Goals Met:</span>
+                    <span className="font-medium">{student.goalsMet} of {student.totalGoals}</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-text-secondary">Next Review:</span>
+                    <span className="font-medium">{new Date(student.nextReview).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Goals Breakdown */}
+            <div className="mb-6">
+              <h3 className="font-medium mb-3">IEP Goals Progress</h3>
+              <div className="space-y-3">
+                {Array.from({ length: student.totalGoals }, (_, index) => {
+                  const isCompleted = index < student.goalsMet;
+                  const goalProgress = isCompleted ? 100 : Math.random() * 80 + 10; // Mock progress
+                  
+                  return (
+                    <div key={index} className="p-3 border border-border rounded-md">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-sm">Goal {index + 1}: {
+                          index === 0 ? 'Reading Comprehension' :
+                          index === 1 ? 'Math Problem Solving' :
+                          index === 2 ? 'Social Skills' :
+                          index === 3 ? 'Written Expression' :
+                          'Communication Skills'
+                        }</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isCompleted ? 'bg-green text-white' : 'bg-gold text-black'
+                        }`}>
+                          {isCompleted ? 'Met' : 'In Progress'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-bg-secondary rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            isCompleted ? 'bg-green' : 'bg-gold'
+                          }`}
+                          style={{ width: `${goalProgress}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-text-secondary mt-1">
+                        {Math.round(goalProgress)}% complete
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="mb-6">
+              <h3 className="font-medium mb-3">Recent Activity</h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-2 bg-bg-secondary rounded">
+                  <div className="w-2 h-2 bg-green rounded-full"></div>
+                  <span className="text-sm">Goal 1 marked as completed</span>
+                  <span className="text-xs text-text-secondary ml-auto">2 days ago</span>
+                </div>
+                <div className="flex items-center gap-3 p-2 bg-bg-secondary rounded">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm">Progress report updated</span>
+                  <span className="text-xs text-text-secondary ml-auto">1 week ago</span>
+                </div>
+                <div className="flex items-center gap-3 p-2 bg-bg-secondary rounded">
+                  <div className="w-2 h-2 bg-gold rounded-full"></div>
+                  <span className="text-sm">IEP meeting scheduled</span>
+                  <span className="text-xs text-text-secondary ml-auto">2 weeks ago</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              <Link
+                to={`/student-service-schedule/s${student.id}`}
+                className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 flex items-center gap-2 no-underline"
+                onClick={onClose}
+              >
+                <Settings size={16} />
+                Manage Schedule
+              </Link>
+              <button
+                onClick={onClose}
+                className="btn bg-accent-purple"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const StudentDashboard: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([
@@ -79,6 +261,8 @@ const StudentDashboard: React.FC = () => {
   ]);
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,6 +273,16 @@ const StudentDashboard: React.FC = () => {
   const upcomingReviews = [...students]
     .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())
     .slice(0, 3);
+
+  const handleViewStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedStudent(null);
+  };
   
   return (
     <div className="animate-fade-in">
@@ -225,10 +419,17 @@ const StudentDashboard: React.FC = () => {
                     <td className="p-3">{new Date(student.nextReview).toLocaleDateString()}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <button className="btn bg-accent-purple text-xs py-1 px-3">View</button>
+                        <button 
+                          onClick={() => handleViewStudent(student)}
+                          className="btn bg-accent-purple text-xs py-1 px-3 flex items-center gap-1 hover:bg-opacity-90 transition-all"
+                          title="View student details"
+                        >
+                          <Eye size={12} />
+                          View
+                        </button>
                         <Link
                           to={`/student-service-schedule/s${student.id}`}
-                          className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 text-xs py-1 px-3 flex items-center gap-1 no-underline"
+                          className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 text-xs py-1 px-3 flex items-center gap-1 no-underline transition-all"
                           title="Manage Service Schedule"
                         >
                           <Settings size={12} />
@@ -326,6 +527,13 @@ const StudentDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Student Detail Modal */}
+      <StudentDetailModal
+        student={selectedStudent}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
