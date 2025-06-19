@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BarChart3, User, Clock, ArrowUp, ArrowDown, Search, Filter } from 'lucide-react';
+import { BarChart3, User, Clock, ArrowUp, ArrowDown, Search, Filter, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Student {
   id: number;
@@ -212,7 +213,17 @@ const StudentDashboard: React.FC = () => {
                     </td>
                     <td className="p-3">{new Date(student.nextReview).toLocaleDateString()}</td>
                     <td className="p-3">
-                      <button className="btn bg-accent-purple text-xs py-1 px-3">View</button>
+                      <div className="flex items-center gap-2">
+                        <button className="btn bg-accent-purple text-xs py-1 px-3">View</button>
+                        <Link
+                          to={`/student-service-schedule/s${student.id}`}
+                          className="btn border border-purple text-purple hover:bg-purple hover:bg-opacity-10 text-xs py-1 px-3 flex items-center gap-1"
+                          title="Manage Service Schedule"
+                        >
+                          <Settings size={12} />
+                          Schedule
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

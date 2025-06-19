@@ -16,7 +16,16 @@ export interface TeamMember {
   };
 }
 
-// Blueprints for our students
+// NEW: Non-service block interface for student schedules
+interface NonServiceBlock {
+  id: string; // Unique ID for the block
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+  blockName: string; // e.g., "Lunch", "Recess", "Mainstream Math"
+  startTime: string; // "HH:MM"
+  endTime: string;   // "HH:MM"
+}
+
+// UPDATED: Blueprints for our students with new scheduling properties
 export interface StudentProfile {
   id: string;
   name: string;
@@ -25,6 +34,10 @@ export interface StudentProfile {
     day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
     slots: { startTime: string; endTime: string }[];
   }[];
+  // NEW: School day timing and non-service schedule
+  schoolDayStartTime?: string; // e.g., "08:30" - General school day for this student
+  schoolDayEndTime?: string;   // e.g., "14:30"
+  weeklyNonServiceSchedule?: NonServiceBlock[];
 }
 
 // Blueprints for district-wide blackout dates
@@ -206,11 +219,15 @@ export const mockTeamMembers: TeamMember[] = [
   },
 ];
 
+// UPDATED: Mock students with new scheduling properties
 export const mockStudents: StudentProfile[] = [
   {
     id: 's1',
     name: 'Leo Gonzalez',
     caseManagerId: 'tm1',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
     serviceAvailability: [
       { day: 'Monday', slots: [{ startTime: '09:00', endTime: '10:00' }, { startTime: '13:00', endTime: '13:45' }] },
       { day: 'Wednesday', slots: [{ startTime: '10:30', endTime: '11:30' }] },
@@ -221,9 +238,63 @@ export const mockStudents: StudentProfile[] = [
     id: 's2',
     name: 'Mia Patel',
     caseManagerId: 'tm1',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
     serviceAvailability: [
       { day: 'Tuesday', slots: [{ startTime: '10:00', endTime: '11:00' }] },
       { day: 'Thursday', slots: [{ startTime: '11:00', endTime: '11:45' }, { startTime: '14:30', endTime: '15:15' }] },
+    ],
+  },
+  // NEW: Additional mock students
+  {
+    id: 's3',
+    name: 'Alex Rodriguez',
+    caseManagerId: 'tm2',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
+    serviceAvailability: [
+      { day: 'Monday', slots: [{ startTime: '09:30', endTime: '10:30' }] },
+      { day: 'Wednesday', slots: [{ startTime: '11:00', endTime: '12:00' }] },
+      { day: 'Friday', slots: [{ startTime: '13:30', endTime: '14:30' }] },
+    ],
+  },
+  {
+    id: 's4',
+    name: 'Emma Thompson',
+    caseManagerId: 'tm3',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
+    serviceAvailability: [
+      { day: 'Tuesday', slots: [{ startTime: '09:00', endTime: '10:00' }, { startTime: '13:00', endTime: '14:00' }] },
+      { day: 'Thursday', slots: [{ startTime: '10:00', endTime: '11:00' }] },
+    ],
+  },
+  {
+    id: 's5',
+    name: 'Jordan Williams',
+    caseManagerId: 'tm1',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
+    serviceAvailability: [
+      { day: 'Monday', slots: [{ startTime: '10:00', endTime: '11:00' }] },
+      { day: 'Tuesday', slots: [{ startTime: '11:30', endTime: '12:30' }] },
+      { day: 'Friday', slots: [{ startTime: '09:00', endTime: '10:00' }] },
+    ],
+  },
+  {
+    id: 's6',
+    name: 'Sophia Chen',
+    caseManagerId: 'tm2',
+    schoolDayStartTime: '08:30',
+    schoolDayEndTime: '14:30',
+    weeklyNonServiceSchedule: [],
+    serviceAvailability: [
+      { day: 'Wednesday', slots: [{ startTime: '09:30', endTime: '10:30' }, { startTime: '13:30', endTime: '14:30' }] },
+      { day: 'Thursday', slots: [{ startTime: '11:30', endTime: '12:30' }] },
     ],
   },
 ];
