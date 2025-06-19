@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart3, User, Clock, ArrowUp, ArrowDown, Search, Filter, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { mockStudents } from '../data/schedulingMockData';
 
 interface Student {
   id: number;
@@ -17,7 +18,7 @@ const StudentDashboard: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([
     { 
       id: 1, 
-      name: 'John Smith', 
+      name: 'Leo Gonzalez', 
       grade: '3rd', 
       program: 'Resource', 
       nextReview: '2025-05-15', 
@@ -27,7 +28,7 @@ const StudentDashboard: React.FC = () => {
     },
     { 
       id: 2, 
-      name: 'Emily Johnson', 
+      name: 'Mia Patel', 
       grade: '5th', 
       program: 'Self-Contained', 
       nextReview: '2025-04-10', 
@@ -37,7 +38,7 @@ const StudentDashboard: React.FC = () => {
     },
     { 
       id: 3, 
-      name: 'Michael Davis', 
+      name: 'Alex Rodriguez', 
       grade: '2nd', 
       program: 'Resource', 
       nextReview: '2025-06-05', 
@@ -47,7 +48,7 @@ const StudentDashboard: React.FC = () => {
     },
     { 
       id: 4, 
-      name: 'Sarah Wilson', 
+      name: 'Emma Thompson', 
       grade: '4th', 
       program: 'Inclusion', 
       nextReview: '2025-03-20', 
@@ -57,13 +58,23 @@ const StudentDashboard: React.FC = () => {
     },
     { 
       id: 5, 
-      name: 'David Thompson', 
+      name: 'Jordan Williams', 
       grade: '1st', 
       program: 'Resource', 
       nextReview: '2025-05-30', 
       progress: 50,
       goalsMet: 2,
       totalGoals: 4
+    },
+    {
+      id: 6,
+      name: 'Sophia Chen',
+      grade: '6th',
+      program: 'Inclusion',
+      nextReview: '2025-04-25',
+      progress: 85,
+      goalsMet: 5,
+      totalGoals: 6
     },
   ]);
   
