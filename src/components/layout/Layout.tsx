@@ -28,14 +28,14 @@ const Layout: React.FC = () => {
         {/* Overlay for mobile when sidebar is open */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
             onClick={handleContentClick}
             aria-hidden="true"
           />
         )}
         
         <main 
-          className="flex-1 p-4 md:p-6 pb-20 md:pb-6 page-transition"
+          className="flex-1 p-4 md:p-6 pb-20 lg:pb-6 page-transition"
           onClick={handleContentClick}
         >
           <Outlet />
