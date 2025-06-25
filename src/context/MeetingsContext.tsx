@@ -31,8 +31,83 @@ interface MeetingsProviderProps {
   children: ReactNode;
 }
 
+// Sample initial meeting data to ensure the app has content
+const initialMeetings: IEPMeeting[] = [
+  {
+    id: '1',
+    eventType: 'iep_meeting',
+    studentId: 's1',
+    studentName: 'Leo Gonzalez',
+    meetingType: 'Annual IEP',
+    teamMemberIds: ['tm1', 'tm2', 'tm3', 'tm4'],
+    date: '2025-02-15',
+    time: '10:00',
+    durationMinutes: 60,
+    status: 'scheduled',
+    createdByUserId: 'tm1',
+    participants: [
+      { teamMemberId: 'tm1', status: 'Accepted', respondedAt: '2025-01-10T10:00:00' },
+      { teamMemberId: 'tm2', status: 'Accepted', respondedAt: '2025-01-10T11:30:00' },
+      { teamMemberId: 'tm3', status: 'Pending' },
+      { teamMemberId: 'tm4', status: 'Pending' }
+    ]
+  },
+  {
+    id: '2',
+    eventType: 'iep_meeting',
+    studentId: 's2',
+    studentName: 'Mia Patel',
+    meetingType: 'Triennial IEP',
+    teamMemberIds: ['tm1', 'tm2', 'tm5', 'tm6'],
+    date: '2025-02-20',
+    time: '13:30',
+    durationMinutes: 90,
+    status: 'scheduled',
+    createdByUserId: 'tm1',
+    participants: [
+      { teamMemberId: 'tm1', status: 'Accepted', respondedAt: '2025-01-12T09:15:00' },
+      { teamMemberId: 'tm2', status: 'Declined', note: 'Have another meeting at this time', respondedAt: '2025-01-12T14:20:00' },
+      { teamMemberId: 'tm5', status: 'Accepted', respondedAt: '2025-01-13T10:45:00' },
+      { teamMemberId: 'tm6', status: 'Pending' }
+    ],
+    alternativeProposals: [
+      {
+        proposalId: '101',
+        proposedDate: '2025-02-22',
+        proposedTime: '10:00',
+        proposedByMemberId: 'tm2',
+        proposedAt: '2025-01-12T14:25:00',
+        votes: [
+          { teamMemberId: 'tm1', vote: 'Pending' },
+          { teamMemberId: 'tm2', vote: 'AcceptAlternative', votedAt: '2025-01-12T14:25:00' },
+          { teamMemberId: 'tm5', vote: 'Pending' },
+          { teamMemberId: 'tm6', vote: 'Pending' }
+        ]
+      }
+    ]
+  },
+  {
+    id: '3',
+    eventType: 'iep_meeting',
+    studentId: 's3',
+    studentName: 'Alex Rodriguez',
+    meetingType: 'Amendment IEP',
+    teamMemberIds: ['tm1', 'tm3', 'tm4'],
+    date: '2025-01-30',
+    time: '15:00',
+    durationMinutes: 45,
+    status: 'scheduled',
+    createdByUserId: 'tm3',
+    participants: [
+      { teamMemberId: 'tm1', status: 'Pending' },
+      { teamMemberId: 'tm3', status: 'Accepted', respondedAt: '2025-01-15T08:30:00' },
+      { teamMemberId: 'tm4', status: 'Accepted', respondedAt: '2025-01-15T09:45:00' }
+    ]
+  }
+];
+
 export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) => {
-  const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
+  const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>(initialMeetings);
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null);
   // State for proposing alternative times
   const [meetingToProposeAlternativeFor, setMeetingToProposeAlternativeFor] = useState<IEPMeeting | null>(null);
