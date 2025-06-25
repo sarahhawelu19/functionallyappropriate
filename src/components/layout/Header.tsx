@@ -20,10 +20,10 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
   return (
     <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-200">
       <div className="flex items-center">
-        {/* Hamburger menu - visible on all screen sizes except xl */}
+        {/* Hamburger menu - ALWAYS visible on ALL screen sizes */}
         <button
           onClick={toggleSidebar}
-          className="xl:hidden mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
+          className="mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
           aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
