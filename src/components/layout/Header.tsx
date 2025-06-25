@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ] as const;
 
   return (
-    <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-200">
+    <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 transition-colors duration-200">
       <div className="flex items-center">
         {/* Hamburger menu - ALWAYS visible on ALL screen sizes */}
         <button

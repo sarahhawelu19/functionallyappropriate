@@ -25,19 +25,17 @@ const Layout: React.FC = () => {
       <div className="flex flex-1 relative">
         <Sidebar isOpen={isSidebarOpen} />
         
-        {/* Overlay when sidebar is open */}
+        {/* Overlay when sidebar is open - lower z-index than sidebar */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-20"
+            className="fixed inset-0 bg-black bg-opacity-50 z-25"
             onClick={handleContentClick}
             aria-hidden="true"
           />
         )}
         
         <main 
-          className={`flex-1 p-4 md:p-6 pb-20 xl:pb-6 page-transition transition-all duration-300 ${
-            isSidebarOpen ? 'xl:ml-68' : ''
-          }`}
+          className="flex-1 p-4 md:p-6 pb-20 xl:pb-6 page-transition transition-all duration-300"
           onClick={handleContentClick}
         >
           <Outlet />
