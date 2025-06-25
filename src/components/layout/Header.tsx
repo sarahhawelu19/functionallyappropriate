@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
-          className="lg:hidden mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
+          className="xl:hidden mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
           aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}

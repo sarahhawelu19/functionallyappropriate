@@ -11,7 +11,7 @@ const MobileNav: React.FC = () => {
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-primary border-t border-border z-30">
+    <div className="xl:hidden fixed bottom-0 left-0 right-0 bg-bg-primary border-t border-border z-30">
       <nav className="flex justify-around items-center h-16">
         {navItems.map((item) => (
           <NavLink
