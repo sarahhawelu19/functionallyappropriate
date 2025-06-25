@@ -9,10 +9,10 @@ interface MeetingsContextType {
   updateMeeting: (updatedMeeting: IEPMeeting) => void;
   editingMeetingId: string | null;
   setEditingMeetingId: React.Dispatch<React.SetStateAction<string | null>>;
-  // NEW: Alternative proposal functions
+  // Alternative proposal functions
   addAlternativeProposal: (meetingId: string, proposal: AlternativeTimeProposal) => void;
   voteOnAlternative: (meetingId: string, proposalId: string, voterId: string, vote: 'AcceptAlternative' | 'PreferOriginal') => void;
-  // NEW: Proposing alternative state
+  // Proposing alternative state
   meetingToProposeAlternativeFor: IEPMeeting | null;
   setMeetingToProposeAlternativeFor: React.Dispatch<React.SetStateAction<IEPMeeting | null>>;
 }
@@ -34,7 +34,7 @@ interface MeetingsProviderProps {
 export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) => {
   const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null);
-  // NEW: State for proposing alternative times
+  // State for proposing alternative times
   const [meetingToProposeAlternativeFor, setMeetingToProposeAlternativeFor] = useState<IEPMeeting | null>(null);
 
   const updateMeetingRSVP = (
@@ -85,7 +85,7 @@ export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) 
     );
   };
 
-  // NEW: Add alternative proposal function
+  // Add alternative proposal function
   const addAlternativeProposal = (meetingId: string, proposal: AlternativeTimeProposal) => {
     setIepMeetings(prevMeetings => 
       prevMeetings.map(meeting => 
@@ -99,7 +99,7 @@ export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) 
     );
   };
 
-  // NEW: Vote on alternative proposal function
+  // Vote on alternative proposal function
   const voteOnAlternative = (
     meetingId: string, 
     proposalId: string, 
@@ -144,7 +144,7 @@ export const MeetingsProvider: React.FC<MeetingsProviderProps> = ({ children }) 
       updateMeeting,
       editingMeetingId,
       setEditingMeetingId,
-      // NEW: Alternative proposal functions
+      // Alternative proposal functions
       addAlternativeProposal,
       voteOnAlternative,
       meetingToProposeAlternativeFor,
