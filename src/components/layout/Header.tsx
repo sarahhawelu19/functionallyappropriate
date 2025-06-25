@@ -67,13 +67,13 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
           href="https://bolt.new/"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+          className="flex items-center justify-center hover:opacity-80 transition-opacity"
           aria-label="Built by Bolt"
         >
           <img
             src={resolvedTheme === 'dark' ? '/white_circle.png' : '/black_circle.png'}
             alt="Built by Bolt"
-            className="w-6 h-6"
+            className="h-[100px] w-auto"
           />
         </a>
       </div>
