@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
           <img
             src={resolvedTheme === 'dark' ? '/white_circle.png' : '/black_circle.png'}
             alt="Built by Bolt"
-            className="h-[100px] w-auto"
+            className="h-[80px] w-auto"
           />
         </a>
       </div>
