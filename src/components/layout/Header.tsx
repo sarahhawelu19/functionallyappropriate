@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ] as const;
 
   return (
-    <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-200">
+    <header className="bg-bg-primary border-b border-border h-[200px] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-200">
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
           <img 
             src={resolvedTheme === 'dark' ? '/bettersped_logow.png' : '/bettersped_logob.png'} 
             alt="BetterSPED Logo"
-            className="h-8 w-auto" 
+            className="h-16 w-auto" 
           />
         </Link>
       </div>
@@ -42,13 +42,13 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
           href="https://bolt.new/"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-80 transition-opacity"
           aria-label="Built by Bolt"
         >
           <img
             src={resolvedTheme === 'dark' ? '/white_circle.png' : '/black_circle.png'}
             alt="Built by Bolt"
-            className="w-6 h-6"
+            className="w-10 h-10"
           />
         </a>
         
@@ -56,7 +56,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as any)}
-            className="appearance-none bg-bg-secondary text-text-primary rounded-md pl-10 pr-8 py-2 cursor-pointer border border-border focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+            className="appearance-none bg-bg-secondary text-text-primary rounded-md pl-12 pr-10 py-3 cursor-pointer border border-border focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors text-lg"
             aria-label="Select theme"
           >
             {themeOptions.map((option) => (
@@ -65,13 +65,13 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
               </option>
             ))}
           </select>
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
             {theme === 'light' ? (
-              <Sun size={16} />
+              <Sun size={20} />
             ) : theme === 'dark' ? (
-              <Moon size={16} />
+              <Moon size={20} />
             ) : (
-              <Monitor size={16} />
+              <Monitor size={20} />
             )}
           </div>
         </div>

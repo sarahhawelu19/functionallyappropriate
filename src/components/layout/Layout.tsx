@@ -35,7 +35,7 @@ const Layout: React.FC = () => {
         )}
         
         <main 
-          className="flex-1 p-4 md:p-6 pb-20 md:pb-6 page-transition"
+          className="flex-1 p-6 md:p-8 pb-24 md:pb-8 page-transition"
           onClick={handleContentClick}
         >
           <Outlet />

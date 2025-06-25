@@ -18,11 +18,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   return (
     <aside
-      className={`fixed top-16 left-0 z-30 h-[calc(100vh-4rem)] bg-bg-primary border-r border-border transition-all duration-300 ease-in-out transform md:translate-x-0 ${
+      className={`fixed top-[200px] left-0 z-30 h-[calc(100vh-200px)] bg-bg-primary border-r border-border transition-all duration-300 ease-in-out transform md:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } md:static md:w-68 overflow-y-auto`}
     >
-      <nav className="p-4 space-y-1">
+      <nav className="p-6 space-y-2">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
