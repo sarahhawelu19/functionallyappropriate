@@ -1,35 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, Users, ArrowLeft, Eye } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, addDays } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
 import NewIEPMeetingModal from '../components/scheduling/NewIEPMeetingModal';
 import DaySlotsModal from '../components/scheduling/DaySlotsModal';
-import MeetingConfirmationModal from '../components/scheduling/MeetingConfirmationModal';
-import ViewMeetingDetailsModal from '../components/scheduling/ViewMeetingDetailsModal';
-import { IEPMeeting, mockTeamMembers, AlternativeTimeProposal } from '../data/schedulingMockData';
+import { IEPMeeting, mockTeamMembers } from '../data/schedulingMockData';
 import { calculateTeamAvailability, AvailableSlot } from '../utils/scheduleCalculator';
-import { useMeetings } from '../context/MeetingsContext';
 
 type ViewMode = 'initial' | 'availability';
 
 const Scheduling: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isNewMeetingModalOpen, setIsNewMeetingModalOpen] = useState(false);
-  const navigate = useNavigate();
-  const { 
-    iepMeetings, 
-    addMeeting, 
-    updateMeeting, 
-    updateMeetingRSVP, 
-    editingMeetingId, 
-    setEditingMeetingId, 
-    setIepMeetings,
-    // NEW: Alternative proposal functions
-    addAlternativeProposal,
-    voteOnAlternative,
-    meetingToProposeAlternativeFor,
-    setMeetingToProposeAlternativeFor
-  } = useMeetings();
+  const [iepMeetings, setIepMeetings] = useState<IEPMeeting[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('initial');
   const [currentMeetingProposal, setCurrentMeetingProposal] = useState<Partial<IEPMeeting> | null>(null);
   const [calculatedAvailability, setCalculatedAvailability] = useState<{
@@ -41,110 +23,6 @@ const Scheduling: React.FC = () => {
   // State for expanded day view
   const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const [expandedDaySlots, setExpandedDaySlots] = useState<AvailableSlot[]>([]);
-
-  // State for confirmation modal
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [confirmedMeetingDetails, setConfirmedMeetingDetails] = useState<IEPMeeting | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  // NEW: State for proposing alternative mode
-  const [isProposingAlternativeFor, setIsProposingAlternativeFor] = useState<string | null>(null);
-  const [currentUserId] = useState('tm1'); // Sarah Miller (Case Manager) - could be dynamic
-
-  // State for ViewMeetingDetailsModal
-  const [viewingMeeting, setViewingMeeting] = useState<IEPMeeting | null>(null);
-
-  // FIXED: Enhanced logging for initial state from context
-  console.log('[Scheduling COMPONENT_LOAD] meetingToProposeAlternativeFor from context:', meetingToProposeAlternativeFor);
-  console.log('[Scheduling COMPONENT_LOAD] Current viewMode:', viewMode);
-  console.log('[Scheduling COMPONENT_LOAD] Current isProposingAlternativeFor:', isProposingAlternativeFor);
-
-  // Effect to handle edit mode when component loads
-  useEffect(() => {
-    if (editingMeetingId) {
-      const meetingToEdit = iepMeetings.find(meeting => meeting.id === editingMeetingId);
-      if (meetingToEdit) {
-        // Pre-fill the modal with existing meeting details
-        setCurrentMeetingProposal(meetingToEdit);
-        setIsEditMode(true);
-        setIsNewMeetingModalOpen(true);
-      }
-    }
-  }, [editingMeetingId, iepMeetings]);
-
-  // FIXED: Enhanced useEffect to handle proposing alternative mode with proper state management
-  useEffect(() => {
-    const currentContextValue = meetingToProposeAlternativeFor;
-    console.log('[Scheduling useEffect_Propose] Fired. Context meetingToProposeAlternativeFor:', currentContextValue);
-    console.log('[Scheduling useEffect_Propose] Current viewMode before processing:', viewMode);
-    
-    if (currentContextValue) {
-      console.log('[Scheduling useEffect_Propose] Processing proposal mode. Setting states...');
-      
-      // Set up the proposal with original meeting details
-      const newProposalDetails = {
-        studentId: currentContextValue.studentId,
-        studentName: currentContextValue.studentName,
-        meetingType: currentContextValue.meetingType,
-        customMeetingType: currentContextValue.customMeetingType,
-        teamMemberIds: currentContextValue.teamMemberIds,
-        durationMinutes: currentContextValue.durationMinutes,
-      };
-      
-      console.log('[Scheduling useEffect_Propose] Setting currentMeetingProposal for proposal:', newProposalDetails);
-      setCurrentMeetingProposal(newProposalDetails);
-      
-      // Set proposing mode
-      console.log('[Scheduling useEffect_Propose] Setting isProposingAlternativeFor to:', currentContextValue.id);
-      setIsProposingAlternativeFor(currentContextValue.id);
-      
-      // CRITICAL FIX: Force viewMode to availability immediately
-      console.log('[Scheduling useEffect_Propose] CRITICAL: Force setting viewMode to availability.');
-      setViewMode('availability');
-      
-      // Calculate availability for the same team and duration
-      if (currentContextValue.teamMemberIds && currentContextValue.durationMinutes) {
-        console.log('[Scheduling useEffect_Propose] Triggering availability calculation for proposal.');
-        
-        const startDate = new Date();
-        const endDate = addDays(startDate, 90); // Calculate 3 months ahead
-        
-        const availability = calculateTeamAvailability(
-          currentContextValue.teamMemberIds,
-          startDate,
-          endDate,
-          currentContextValue.durationMinutes
-        );
-        
-        setCalculatedAvailability(availability);
-        console.log('[Scheduling useEffect_Propose] Calculated Availability for alternative proposal:', availability);
-      }
-      
-      console.log('[Scheduling useEffect_Propose] Proposal mode setup complete. ViewMode should now be availability.');
-    } else {
-      console.log('[Scheduling useEffect_Propose] meetingToProposeAlternativeFor is null/undefined, not entering proposal mode.');
-      
-      // ADDED: Reset states when context is cleared
-      if (isProposingAlternativeFor) {
-        console.log('[Scheduling useEffect_Propose] Clearing proposal states since context was cleared');
-        setIsProposingAlternativeFor(null);
-        setCurrentMeetingProposal(null);
-        setCalculatedAvailability(null);
-        setViewMode('initial');
-      }
-    }
-  }, [meetingToProposeAlternativeFor]); // Only depend on the context value
-
-  // FIXED: Additional useEffect to log viewMode changes and ensure consistency
-  useEffect(() => {
-    console.log('[Scheduling viewMode_Change] ViewMode changed to:', viewMode);
-    
-    // ADDED: Consistency check - if we have a proposal context but viewMode is initial, fix it
-    if (meetingToProposeAlternativeFor && viewMode === 'initial') {
-      console.log('[Scheduling viewMode_Change] INCONSISTENCY DETECTED: Have proposal context but viewMode is initial. Forcing to availability.');
-      setViewMode('availability');
-    }
-  }, [viewMode, meetingToProposeAlternativeFor]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -186,149 +64,24 @@ const Scheduling: React.FC = () => {
   const handleSlotClick = (slot: AvailableSlot) => {
     if (!currentMeetingProposal) return;
     
-    console.log('[Scheduling handleSlotClick] Slot clicked:', slot);
-    console.log('[Scheduling handleSlotClick] isProposingAlternativeFor:', isProposingAlternativeFor);
-    
-    // NEW: Check if we're proposing an alternative time
-    if (isProposingAlternativeFor) {
-      console.log('[Scheduling handleSlotClick] Creating alternative proposal for meeting:', isProposingAlternativeFor);
-      
-      // Create alternative proposal
-      const proposal: AlternativeTimeProposal = {
-        proposalId: Date.now().toString(),
-        proposedDate: slot.date,
-        proposedTime: slot.startTime,
-        proposedByMemberId: currentUserId,
-        proposedAt: new Date().toISOString(),
-        votes: (currentMeetingProposal.teamMemberIds || []).map(teamMemberId => ({
-          teamMemberId,
-          vote: teamMemberId === currentUserId ? 'AcceptAlternative' as const : 'Pending' as const,
-        })),
-      };
-      
-      console.log('[Scheduling handleSlotClick] Adding alternative proposal:', proposal);
-      
-      // Add the proposal to the original meeting
-      addAlternativeProposal(isProposingAlternativeFor, proposal);
-      
-      // Create confirmation details for the proposal
-      const proposalConfirmation: IEPMeeting = {
-        ...currentMeetingProposal,
-        id: isProposingAlternativeFor, // Use original meeting ID for reference
-        date: slot.date,
-        time: slot.startTime,
-        durationMinutes: currentMeetingProposal.durationMinutes!,
-        status: 'scheduled',
-        participants: [],
-      } as IEPMeeting;
-      
-      setConfirmedMeetingDetails(proposalConfirmation);
-      setIsConfirmationModalOpen(true);
-      
-      // Clear expanded day states
-      setExpandedDay(null);
-      setExpandedDaySlots([]);
-      
-      return;
-    }
-    
-    // Original meeting creation/editing logic
+    // Create final meeting object directly
     const finalMeeting: IEPMeeting = {
       ...currentMeetingProposal,
       date: slot.date,
       time: slot.startTime,
       durationMinutes: currentMeetingProposal.durationMinutes!,
       status: 'scheduled',
-      // Initialize participants array with all team members set to 'Pending'
-      participants: (currentMeetingProposal.teamMemberIds || []).map(teamMemberId => ({
-        teamMemberId,
-        status: 'Pending' as const,
-      })),
     } as IEPMeeting;
     
-    // Check if we're editing or creating
-    if (isEditMode && editingMeetingId) {
-      // Update existing meeting
-      updateMeeting(finalMeeting);
-    } else {
-      // Add new meeting
-      addMeeting(finalMeeting);
-    }
+    // Add to meetings list
+    setIepMeetings(prev => [...prev, finalMeeting]);
     
-    // Set confirmation modal details and open it
-    setConfirmedMeetingDetails(finalMeeting);
-    setIsConfirmationModalOpen(true);
-    
-    // Clear expanded day states
-    setExpandedDay(null);
-    setExpandedDaySlots([]);
-  };
-
-  const handleConfirmationClose = () => {
-    console.log('[Scheduling handleConfirmationClose] Closing confirmation and resetting states');
-    
-    // Reset all states and return to initial view
-    setIsConfirmationModalOpen(false);
-    setConfirmedMeetingDetails(null);
+    // Clear states after successful scheduling
     setCurrentMeetingProposal(null);
     setCalculatedAvailability(null);
     setExpandedDay(null);
     setExpandedDaySlots([]);
-    setViewMode('initial');
-    
-    // Clear edit mode states
-    setIsEditMode(false);
-    setEditingMeetingId(null);
-    
-    // NEW: Clear proposing alternative states
-    setIsProposingAlternativeFor(null);
-    setMeetingToProposeAlternativeFor(null);
-    
-    console.log('[Scheduling handleConfirmationClose] All states reset');
-  };
-
-  const handleSendInvitations = (meeting: IEPMeeting) => {
-    console.log("Sending invitations for meeting:", meeting);
-    
-    // NEW: Different message for edit vs new vs alternative proposal
-    const actionType = isProposingAlternativeFor ? "alternative" : isEditMode ? "updated" : "new";
-    
-    // Simulate sending emails to team members
-    meeting.teamMemberIds?.forEach(memberId => {
-      const teamMember = mockTeamMembers.find(member => member.id === memberId);
-      if (teamMember) {
-        const formattedDate = meeting.date ? new Date(meeting.date).toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        }) : '';
-        
-        const formattedTime = meeting.time ? (() => {
-          const [hour, minute] = meeting.time.split(':').map(Number);
-          const period = hour >= 12 ? 'PM' : 'AM';
-          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-          return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
-        })() : '';
-        
-        let emailSubject, emailBody;
-        
-        if (isProposingAlternativeFor) {
-          emailSubject = `Alternative Time Proposed: IEP Meeting for ${meeting.studentName}`;
-          emailBody = `A team member has proposed an alternative time for the IEP meeting for ${meeting.studentName}. Proposed time: ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please vote on this proposal.`;
-        } else if (isEditMode) {
-          emailSubject = `UPDATED: IEP Meeting for ${meeting.studentName}`;
-          emailBody = `The IEP meeting for ${meeting.studentName} has been updated. New details: ${meeting.meetingType} on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please confirm your availability.`;
-        } else {
-          emailSubject = `IEP Meeting Invitation - ${meeting.studentName}`;
-          emailBody = `You are invited to an IEP meeting for ${meeting.studentName} (${meeting.meetingType}) on ${formattedDate} at ${formattedTime} for ${meeting.durationMinutes} minutes. Please RSVP.`;
-        }
-        
-        console.log(`Simulated email to ${teamMember.name} <${teamMember.email}>: ${emailSubject} - ${emailBody}`);
-      }
-    });
-    
-    console.log(`All ${actionType} meeting invitations sent successfully!`);
+    setViewMode('initial'); // Return to initial view after scheduling
   };
 
   const handleDayClick = (day: Date, dayCommonSlots: AvailableSlot[]) => {
@@ -339,98 +92,12 @@ const Scheduling: React.FC = () => {
   };
 
   const handleBackToInitial = () => {
-    console.log('[Scheduling handleBackToInitial] Back button clicked');
-    console.log('[Scheduling handleBackToInitial] isProposingAlternativeFor:', isProposingAlternativeFor);
-    
-    // NEW: Updated back button behavior for proposing alternative mode
-    if (isProposingAlternativeFor) {
-      console.log('[Scheduling handleBackToInitial] Back button clicked during proposal mode - clearing proposal state');
-      setIsProposingAlternativeFor(null);
-      setMeetingToProposeAlternativeFor(null);
-      setViewMode('initial');
-      setCurrentMeetingProposal(null);
-      setCalculatedAvailability(null);
-      setExpandedDay(null);
-      setExpandedDaySlots([]);
-      // Navigate back to my-meetings instead of opening modal
-      window.history.back();
-      return;
-    }
-    
     setViewMode('initial');
     setCurrentMeetingProposal(null);
     setCalculatedAvailability(null);
     setExpandedDay(null);
     setExpandedDaySlots([]);
-    
-    if (isEditMode) {
-      setIsNewMeetingModalOpen(true);
-    } else {
-      setIsNewMeetingModalOpen(true);
-    }
-  };
-
-  // Handle modal close - clear edit state if needed
-  const handleModalClose = () => {
-    setIsNewMeetingModalOpen(false);
-    if (isEditMode) {
-      setIsEditMode(false);
-      setEditingMeetingId(null);
-      setCurrentMeetingProposal(null);
-    }
-  };
-
-  // Handle meeting click in upcoming events
-  const handleMeetingClick = (meeting: IEPMeeting) => {
-    setViewingMeeting(meeting);
-  };
-
-  // STANDARDIZED: Propose New Time function - used by modal from Upcoming Events
-  const executeProposalWorkflow = (meeting: IEPMeeting, source: string) => {
-    console.log(`[SchedulingPage] ${source}: User clicked Propose New Time for:`, meeting);
-    
-    // Step 1: Update RSVP status to indicate they're proposing a new time
-    console.log(`[SchedulingPage] ${source}: Step 1 - Updating RSVP status`);
-    updateMeetingRSVP(meeting.id, currentUserId, 'ProposedNewTime', 'User is selecting an alternative time...');
-    
-    // Step 2: Set the meeting context for proposing alternative
-    console.log(`[SchedulingPage] ${source}: Step 2 - Setting meetingToProposeAlternativeFor context state to:`, meeting);
-    setMeetingToProposeAlternativeFor(meeting);
-    
-    // Step 3: Navigate to scheduling page with small delay to ensure context is set
-    setTimeout(() => {
-      console.log(`[SchedulingPage] ${source}: Step 3 - Navigating to /scheduling for proposal mode`);
-      navigate('/scheduling');
-    }, 100);
-  };
-
-  // ViewMeetingDetailsModal handlers
-  const handleEditFromModal = (meeting: IEPMeeting) => {
-    setEditingMeetingId(meeting.id);
-    // The useEffect will handle opening the edit modal
-  };
-
-  const handleCancelFromModal = (meetingId: string) => {
-    setIepMeetings(prevMeetings => 
-      prevMeetings.map(meeting => 
-        meeting.id === meetingId 
-          ? { ...meeting, status: 'cancelled' as const }
-          : meeting
-      )
-    );
-  };
-
-  const handleAcceptFromModal = (meetingId: string) => {
-    updateMeetingRSVP(meetingId, currentUserId, 'Accepted');
-  };
-
-  const handleDeclineFromModal = (meetingId: string) => {
-    updateMeetingRSVP(meetingId, currentUserId, 'Declined');
-  };
-
-  // FIXED: This is the critical fix - use the standardized workflow for proposals from Upcoming Events modal
-  const handleProposeFromModal = (meeting: IEPMeeting) => {
-    executeProposalWorkflow(meeting, 'SCHEDULING_UPCOMING_EVENTS_MODAL');
+    setIsNewMeetingModalOpen(true);
   };
 
   const getTeamMemberNames = (teamMemberIds: string[]) => {
@@ -460,35 +127,12 @@ const Scheduling: React.FC = () => {
     return { commonSlots: monthCommonSlots };
   };
 
-  // NEW: Determine the current mode for UI display
-  const getCurrentMode = () => {
-    if (isProposingAlternativeFor) return 'proposing';
-    if (isEditMode) return 'editing';
-    return 'creating';
-  };
-
-  const currentMode = getCurrentMode();
-
-  console.log('[Scheduling RENDER] Current viewMode:', viewMode);
-  console.log('[Scheduling RENDER] Current mode:', currentMode);
-  console.log('[Scheduling RENDER] isProposingAlternativeFor:', isProposingAlternativeFor);
-  console.log('[Scheduling RENDER] meetingToProposeAlternativeFor context:', meetingToProposeAlternativeFor);
-
-  // CRITICAL FIX: Force availability view if we have proposal context but wrong viewMode
-  if (meetingToProposeAlternativeFor && viewMode === 'initial') {
-    console.log('[Scheduling RENDER] CRITICAL FIX: Forcing viewMode to availability due to proposal context');
-    setViewMode('availability');
-  }
-
   // Initial View
   if (viewMode === 'initial') {
-    console.log('[Scheduling RENDER] Rendering initial view');
     return (
       <div className="animate-fade-in">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-medium">
-            {currentMode === 'editing' ? 'Edit IEP Meeting' : 'Scheduling'}
-          </h1>
+          <h1 className="text-2xl font-medium">Scheduling</h1>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -496,14 +140,10 @@ const Scheduling: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="card text-center py-12">
               <CalendarIcon className="text-teal mx-auto mb-4" size={64} />
-              <h2 className="text-2xl font-medium mb-4">
-                {currentMode === 'editing' ? 'Edit IEP Meeting' : 'Schedule IEP Meetings'}
-              </h2>
+              <h2 className="text-2xl font-medium mb-4">Schedule IEP Meetings</h2>
               <p className="text-text-secondary mb-8 max-w-md mx-auto">
-                {currentMode === 'editing' 
-                  ? 'Modify the meeting details below. Team members will be re-notified of any changes.'
-                  : 'Select your team members, meeting duration, and we\'ll show you exactly when everyone is available for that specific time block.'
-                }
+                Select your team members, meeting duration, and we'll show you exactly when 
+                everyone is available for that specific time block.
               </p>
               
               <button 
@@ -512,7 +152,7 @@ const Scheduling: React.FC = () => {
               >
                 <span className="flex items-center gap-2">
                   <Plus size={24} />
-                  {currentMode === 'editing' ? 'Continue Editing Meeting' : 'Schedule New IEP Meeting'}
+                  Schedule New IEP Meeting
                 </span>
               </button>
             </div>
@@ -532,11 +172,7 @@ const Scheduling: React.FC = () => {
                   .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())
                   .slice(0, 5)
                   .map(meeting => (
-                    <div 
-                      key={meeting.id} 
-                      className="p-3 border border-border rounded-md hover:border-teal transition-all cursor-pointer"
-                      onClick={() => handleMeetingClick(meeting)}
-                    >
+                    <div key={meeting.id} className="p-3 border border-border rounded-md hover:border-teal transition-all">
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium">{meeting.studentName}</h3>
                         <span className="text-sm bg-teal text-white px-2 py-0.5 rounded">
@@ -548,9 +184,6 @@ const Scheduling: React.FC = () => {
                       </p>
                       <p className="text-xs text-text-secondary mt-1">
                         Duration: {meeting.durationMinutes} minutes
-                      </p>
-                      <p className="text-xs text-teal mt-1 hover:underline">
-                        Click to view details
                       </p>
                     </div>
                   ))}
@@ -571,38 +204,15 @@ const Scheduling: React.FC = () => {
 
         <NewIEPMeetingModal
           isOpen={isNewMeetingModalOpen}
-          onClose={handleModalClose}
+          onClose={() => setIsNewMeetingModalOpen(false)}
           onScheduleMeeting={handleScheduleMeeting}
           initialProposal={currentMeetingProposal}
-        />
-
-        <MeetingConfirmationModal
-          isOpen={isConfirmationModalOpen}
-          onClose={handleConfirmationClose}
-          onSendInvitations={handleSendInvitations}
-          meeting={confirmedMeetingDetails}
-          isEditMode={isEditMode}
-          isProposingAlternative={isProposingAlternativeFor !== null}
-        />
-
-        <ViewMeetingDetailsModal
-          isOpen={viewingMeeting !== null}
-          onClose={() => setViewingMeeting(null)}
-          meeting={viewingMeeting}
-          currentUserId={currentUserId}
-          onEdit={handleEditFromModal}
-          onCancelMeeting={handleCancelFromModal}
-          onAccept={handleAcceptFromModal}
-          onDecline={handleDeclineFromModal}
-          onProposeNewTime={handleProposeFromModal}
-          onVoteOnProposal={voteOnAlternative}
         />
       </div>
     );
   }
 
   // Availability View
-  console.log('[Scheduling RENDER] Rendering availability view');
   const { commonSlots: monthCommonSlots } = getMonthSlots();
 
   return (
@@ -616,33 +226,19 @@ const Scheduling: React.FC = () => {
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 className="text-2xl font-medium">
-            {currentMode === 'proposing' && 'Propose Alternative - '}
-            {currentMode === 'editing' && 'Edit Meeting - '}
-            Available {currentMeetingProposal?.durationMinutes}-Minute Slots
-          </h1>
+          <h1 className="text-2xl font-medium">Available {currentMeetingProposal?.durationMinutes}-Minute Slots</h1>
         </div>
       </div>
 
       {/* Meeting Proposal Summary */}
       {currentMeetingProposal && (
-        <div className={`card mb-6 ${
-          currentMode === 'proposing' ? 'bg-blue-500 bg-opacity-5 border-blue-500' :
-          currentMode === 'editing' ? 'bg-gold bg-opacity-5 border-gold' : 
-          'bg-teal bg-opacity-5 border-teal'
-        }`}>
+        <div className="card mb-6 bg-teal bg-opacity-5 border-teal">
           <div className="flex items-start gap-4">
-            <div className={`p-2 rounded-full text-white ${
-              currentMode === 'proposing' ? 'bg-blue-500' :
-              currentMode === 'editing' ? 'bg-gold' : 
-              'bg-teal'
-            }`}>
+            <div className="p-2 bg-teal rounded-full text-white">
               <Users size={20} />
             </div>
             <div className="flex-1">
               <h3 className="font-medium text-lg mb-2">
-                {currentMode === 'proposing' && <span className="text-blue-500">[PROPOSING ALTERNATIVE] </span>}
-                {currentMode === 'editing' && <span className="text-gold">[EDITING] </span>}
                 {currentMeetingProposal.meetingType} for {currentMeetingProposal.studentName}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -659,26 +255,12 @@ const Scheduling: React.FC = () => {
               </div>
               <div className="mt-3 flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded ${
-                    currentMode === 'proposing' ? 'bg-blue-500' :
-                    currentMode === 'editing' ? 'bg-gold' : 
-                    'bg-teal'
-                  }`}></div>
-                  <span>
-                    {currentMode === 'proposing' ? 'Blue' :
-                     currentMode === 'editing' ? 'Gold' : 
-                     'Teal'} slots = {currentMeetingProposal.durationMinutes}-minute blocks where all {currentMeetingProposal.teamMemberIds?.length || 0} members are available
-                  </span>
+                  <div className="w-4 h-4 bg-teal rounded"></div>
+                  <span>Teal slots = {currentMeetingProposal.durationMinutes}-minute blocks where all {currentMeetingProposal.teamMemberIds?.length || 0} members are available</span>
                 </div>
               </div>
               <p className="text-text-secondary mt-2 text-sm">
-                {currentMode === 'proposing' && <span className="text-blue-500 font-medium">Proposing Alternative: </span>}
-                {currentMode === 'editing' && <span className="text-gold font-medium">Editing Mode: </span>}
-                Click on any day with {
-                  currentMode === 'proposing' ? 'blue' :
-                  currentMode === 'editing' ? 'gold' : 
-                  'teal'
-                } availability to see all {currentMeetingProposal.durationMinutes}-minute time slots for that day.
+                Click on any day with teal availability to see all {currentMeetingProposal.durationMinutes}-minute time slots for that day.
               </p>
             </div>
           </div>
@@ -732,9 +314,6 @@ const Scheduling: React.FC = () => {
               const isPastDate = day < new Date(new Date().setHours(0, 0, 0, 0));
               const isWeekend = getDay(day) === 0 || getDay(day) === 6;
               const hasCommonSlots = dayCommonSlots.length > 0;
-              const slotColor = currentMode === 'proposing' ? 'blue-500' :
-                               currentMode === 'editing' ? 'gold' : 
-                               'teal';
               
               return (
                 <div 
@@ -743,14 +322,14 @@ const Scheduling: React.FC = () => {
                     isPastDate || isWeekend
                       ? 'bg-bg-secondary bg-opacity-50' 
                       : hasCommonSlots
-                        ? `hover:border-${slotColor} cursor-pointer hover:bg-${slotColor} hover:bg-opacity-5` 
+                        ? 'hover:border-teal cursor-pointer hover:bg-teal hover:bg-opacity-5' 
                         : ''
                   } ${
-                    isToday(day) ? `bg-${slotColor} bg-opacity-10 border-${slotColor}` : ''
+                    isToday(day) ? 'bg-teal bg-opacity-10 border-teal' : ''
                   }`}
                   onClick={() => !isPastDate && !isWeekend && hasCommonSlots && handleDayClick(day, dayCommonSlots)}
                 >
-                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : hasCommonSlots ? `text-${slotColor} font-bold` : ''}`}>
+                  <div className={`text-sm font-medium mb-1 ${isPastDate ? 'text-text-secondary' : hasCommonSlots ? 'text-teal font-bold' : ''}`}>
                     {format(day, 'd')}
                   </div>
                   
@@ -766,10 +345,10 @@ const Scheduling: React.FC = () => {
                     {/* Show common slots indicator */}
                     {!isPastDate && !isWeekend && hasCommonSlots && (
                       <div className="text-center">
-                        <div className={`text-xs text-${slotColor} font-bold bg-${slotColor} bg-opacity-10 rounded px-1 py-0.5`}>
+                        <div className="text-xs text-teal font-bold bg-teal bg-opacity-10 rounded px-1 py-0.5">
                           {dayCommonSlots.length} slot{dayCommonSlots.length !== 1 ? 's' : ''}
                         </div>
-                        <div className={`text-[10px] text-${slotColor} mt-1`}>
+                        <div className="text-[10px] text-teal mt-1">
                           {currentMeetingProposal?.durationMinutes}min blocks
                         </div>
                       </div>
@@ -795,35 +374,11 @@ const Scheduling: React.FC = () => {
         {/* Sidebar */}
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className={
-              currentMode === 'proposing' ? 'text-blue-500' :
-              currentMode === 'editing' ? 'text-gold' : 
-              'text-teal'
-            } size={20} />
+            <Clock className="text-teal" size={20} />
             <h2 className="text-xl font-medium">{currentMeetingProposal?.durationMinutes}-Min Availability</h2>
           </div>
           
           <div className="space-y-4 text-sm">
-            {/* Mode Indicator */}
-            {currentMode !== 'creating' && (
-              <div className={`p-3 bg-opacity-10 border rounded-md ${
-                currentMode === 'proposing' ? 'bg-blue-500 border-blue-500' :
-                'bg-gold border-gold'
-              }`}>
-                <h3 className={`font-medium mb-1 ${
-                  currentMode === 'proposing' ? 'text-blue-500' : 'text-gold'
-                }`}>
-                  {currentMode === 'proposing' ? 'Proposing Alternative Time' : 'Edit Mode Active'}
-                </h3>
-                <p className="text-xs text-text-secondary">
-                  {currentMode === 'proposing' 
-                    ? 'You\'re proposing an alternative time for an existing meeting. Team members will vote on your proposal.'
-                    : 'You\'re editing an existing meeting. Selecting a new time will update the meeting and reset all participant RSVPs.'
-                  }
-                </p>
-              </div>
-            )}
-            
             {/* Statistics */}
             {calculatedAvailability && (
               <div className="p-3 bg-bg-secondary rounded-md">
@@ -831,11 +386,7 @@ const Scheduling: React.FC = () => {
                 <div className="space-y-2 text-text-secondary">
                   <div className="flex justify-between">
                     <span>{currentMeetingProposal?.durationMinutes}-min slots found:</span>
-                    <span className={`font-medium ${
-                      currentMode === 'proposing' ? 'text-blue-500' :
-                      currentMode === 'editing' ? 'text-gold' : 
-                      'text-teal'
-                    }`}>{monthCommonSlots.length}</span>
+                    <span className="font-medium text-teal">{monthCommonSlots.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Team members:</span>
@@ -850,31 +401,11 @@ const Scheduling: React.FC = () => {
             )}
             
             <div className="p-3 bg-bg-secondary rounded-md">
-              <h3 className="font-medium mb-2">How to {
-                currentMode === 'proposing' ? 'Propose' :
-                currentMode === 'editing' ? 'Update' : 
-                'Schedule'
-              }</h3>
+              <h3 className="font-medium mb-2">How to Schedule</h3>
               <ol className="space-y-2 text-text-secondary">
-                <li>1. <span className={`font-medium ${
-                  currentMode === 'proposing' ? 'text-blue-500' :
-                  currentMode === 'editing' ? 'text-gold' : 
-                  'text-teal'
-                }`}>Click any day</span> with {
-                  currentMode === 'proposing' ? 'blue' :
-                  currentMode === 'editing' ? 'gold' : 
-                  'teal'
-                } availability</li>
-                <li>2. <span className={`font-medium ${
-                  currentMode === 'proposing' ? 'text-blue-500' :
-                  currentMode === 'editing' ? 'text-gold' : 
-                  'text-teal'
-                }`}>Select a {currentMeetingProposal?.durationMinutes}-minute slot</span> from the list</li>
-                <li>3. {
-                  currentMode === 'proposing' ? 'Alternative time is proposed!' :
-                  currentMode === 'editing' ? 'Meeting is updated' : 
-                  'Meeting is scheduled'
-                } immediately!</li>
+                <li>1. <span className="text-teal font-medium">Click any day</span> with teal availability</li>
+                <li>2. <span className="text-teal font-medium">Select a {currentMeetingProposal?.durationMinutes}-minute slot</span> from the list</li>
+                <li>3. Meeting is immediately scheduled!</li>
               </ol>
             </div>
             
@@ -894,21 +425,13 @@ const Scheduling: React.FC = () => {
                       <button
                         key={index}
                         onClick={() => handleSlotClick(slot)}
-                        className={`w-full text-left text-xs p-2 border rounded hover:bg-opacity-10 transition-colors ${
-                          currentMode === 'proposing' ? 'border-blue-500 hover:bg-blue-500' :
-                          currentMode === 'editing' ? 'border-gold hover:bg-gold' : 
-                          'border-teal hover:bg-teal'
-                        }`}
+                        className="w-full text-left text-xs p-2 border border-teal rounded hover:bg-teal hover:bg-opacity-10 transition-colors"
                       >
                         <div className="font-medium">{format(new Date(slot.date), 'MMM d')}</div>
                         <div className="text-text-secondary">
                           {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                         </div>
-                        <div className={`text-[10px] ${
-                          currentMode === 'proposing' ? 'text-blue-500' :
-                          currentMode === 'editing' ? 'text-gold' : 
-                          'text-teal'
-                        }`}>
+                        <div className="text-teal text-[10px]">
                           {currentMeetingProposal?.durationMinutes}-min block • All {currentMeetingProposal?.teamMemberIds?.length || 0} members available
                         </div>
                       </button>
@@ -924,11 +447,7 @@ const Scheduling: React.FC = () => {
                 </p>
                 <button 
                   onClick={handleBackToInitial}
-                  className={`mt-3 text-xs hover:underline ${
-                    currentMode === 'proposing' ? 'text-blue-500' :
-                    currentMode === 'editing' ? 'text-gold' : 
-                    'text-teal'
-                  }`}
+                  className="mt-3 text-xs text-teal hover:underline"
                 >
                   Try different duration or team members
                 </button>
@@ -941,7 +460,7 @@ const Scheduling: React.FC = () => {
       {/* Modals */}
       <NewIEPMeetingModal
         isOpen={isNewMeetingModalOpen}
-        onClose={handleModalClose}
+        onClose={() => setIsNewMeetingModalOpen(false)}
         onScheduleMeeting={handleScheduleMeeting}
         initialProposal={currentMeetingProposal}
       />
@@ -955,28 +474,6 @@ const Scheduling: React.FC = () => {
         day={expandedDay}
         commonSlotsForDay={expandedDaySlots}
         onSlotSelect={handleSlotClick}
-      />
-
-      <MeetingConfirmationModal
-        isOpen={isConfirmationModalOpen}
-        onClose={handleConfirmationClose}
-        onSendInvitations={handleSendInvitations}
-        meeting={confirmedMeetingDetails}
-        isEditMode={isEditMode}
-        isProposingAlternative={isProposingAlternativeFor !== null}
-      />
-
-      <ViewMeetingDetailsModal
-        isOpen={viewingMeeting !== null}
-        onClose={() => setViewingMeeting(null)}
-        meeting={viewingMeeting}
-        currentUserId={currentUserId}
-        onEdit={handleEditFromModal}
-        onCancelMeeting={handleCancelFromModal}
-        onAccept={handleAcceptFromModal}
-        onDecline={handleDeclineFromModal}
-        onProposeNewTime={handleProposeFromModal}
-        onVoteOnProposal={voteOnAlternative}
       />
     </div>
   );

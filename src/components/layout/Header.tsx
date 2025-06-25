@@ -18,11 +18,12 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ] as const;
 
   return (
-    <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-200">
+    <header className="bg-bg-primary border-b border-border h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 transition-colors duration-200">
       <div className="flex items-center">
+        {/* Hamburger menu - ALWAYS visible on ALL screen sizes */}
         <button
           onClick={toggleSidebar}
-          className="md:hidden mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
+          className="mr-4 p-2 rounded-md hover:bg-bg-secondary transition-colors"
           aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
@@ -36,7 +37,9 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
         </Link>
       </div>
       
-      <div className="flex items-center space-x-2">
+      {/* Right side - always aligned to the right */}
+      <div className="flex items-center space-x-2 ml-auto">
+        {/* Theme Selector */}
         <div className="relative">
           <select
             value={theme}
@@ -60,6 +63,21 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, toggleSidebar }) => {
             )}
           </div>
         </div>
+        
+        {/* Built by Bolt Link */}
+        <a
+          href="https://bolt.new/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center w-8 h-8 rounded-full hover:opacity-80 transition-opacity"
+          aria-label="Built by Bolt"
+        >
+          <img
+            src={resolvedTheme === 'dark' ? '/white_circle.png' : '/black_circle.png'}
+            alt="Built by Bolt"
+            className="w-6 h-6"
+          />
+        </a>
       </div>
     </header>
   );

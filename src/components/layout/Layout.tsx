@@ -11,7 +11,7 @@ const Layout: React.FC = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Close sidebar when clicking outside on mobile
+  // Close sidebar when clicking outside
   const handleContentClick = () => {
     if (isSidebarOpen) {
       setIsSidebarOpen(false);
@@ -25,17 +25,17 @@ const Layout: React.FC = () => {
       <div className="flex flex-1 relative">
         <Sidebar isOpen={isSidebarOpen} />
         
-        {/* Overlay for mobile when sidebar is open */}
+        {/* Overlay when sidebar is open - lower z-index than sidebar */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-25"
             onClick={handleContentClick}
             aria-hidden="true"
           />
         )}
         
         <main 
-          className="flex-1 p-4 md:p-6 pb-20 md:pb-6 page-transition"
+          className="flex-1 p-4 md:p-6 pb-20 xl:pb-6 page-transition transition-all duration-300"
           onClick={handleContentClick}
         >
           <Outlet />
